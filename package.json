@@ -1,0 +1,30 @@
+{
+  "name": "integrador-node",
+  "version": "1.0.0",
+  "description": "Versão backend em node",
+  "main": "server.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.3.0",
+    "prisma": "^5.18.0",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/bcrypt": "^5.0.2",
+    "@types/nodemailer": "^6.4.15",
+    "bcrypt": "^5.1.1",
+    "dayjs": "^1.11.12",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1",
+    "fastify-type-provider-zod": "^2.0.0",
+    "nodemailer": "^6.9.14",
+    "zod": "^3.23.8"
+  }
+}
