@@ -1,4 +1,4 @@
-## Instação
+## Instalação
 
 1. Baixe o código fonte do projeto em:
 
