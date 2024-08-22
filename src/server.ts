@@ -5,21 +5,40 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
-import { userRoutes } from "./routes/userRoutes";
-import { vehicleRoutes } from "./routes/vehicleRoutes";
-import { rideRoutes } from "./routes/ridesRoutes";
-import { reservationRoutes } from "./routes/reservationsRoutes";
-
+import eventPlugin from "./plugins/eventBus";
+import { setupEvents } from "./events/setupEvents";
+import { ridesController } from "./controllers/rides/ridesController";
+import { userController } from "./controllers/users/userController";
+import { vehicleController } from "./controllers/vehicles/vehicleController";
+import { reservationController } from "./controllers/reservations/reservationController";
 const app = Fastify();
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
-app.register(userRoutes);
-app.register(vehicleRoutes);
-app.register(rideRoutes);
-app.register(reservationRoutes);
+app.register(userController);
+app.register(vehicleController);
+app.register(ridesController);
+app.register(reservationController);
 
-app.listen({ port: 3000 }).then(() => {
-  console.log("Servidor rodando em http://localhost:3000");
+app.register(eventPlugin);
+
+app.ready((err) => {
+  if (err) {
+    console.error("Erro ao iniciar o Fastify:", err);
+    process.exit(1);
+  }
+
+  setupEvents(app);
+  console.log("Servidor pronto para receber requisições.");
 });
+
+app
+  .listen({ port: 3000 })
+  .then(() => {
+    console.log("Servidor rodando em http://localhost:3000");
+  })
+  .catch((err) => {
+    console.error("Falha ao iniciar o servidor:", err);
+    process.exit(1);
+  });

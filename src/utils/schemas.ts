@@ -36,13 +36,35 @@ export const createRideSchema = z.object({
   vehicle_id: z.string().uuid(),
   start_location: z.string(),
   end_location: z.string(),
-  start_time: z.string().datetime({ message: "Digite uma data válida." }),
+  start_time: z.coerce.date({ message: "Digite uma data válida." }),
   price: z.number().positive(),
-  available_seats: z.number().int().positive(),
+  available_seats: z
+    .number()
+    .int()
+    .positive()
+    .min(1, "A corrida deve conter pelo menos um assento disponível.")
+    .max(50, "Não é possível adicionar mais de 50 pessoas."),
   preferences: z.string(),
 });
 
 export const createReservationSchema = z.object({
   ride_id: z.string().uuid(),
   passenger_id: z.string().uuid(),
+});
+
+export const updateRideSchema = z.object({
+  ride_id: z.string().uuid("ID da corrida inválido."),
+  driver_id: z.string().uuid("ID da corrida inválido."),
+  start_location: z.string().optional(),
+  end_location: z.string().optional(),
+  start_time: z.coerce.date().optional(),
+  price: z.number().positive().optional(),
+  available_seats: z
+    .number()
+    .int()
+    .positive()
+    .min(1, "A corrida deve conter pelo menos um assento disponível.")
+    .max(50, "Não é possível adicionar mais de 50 pessoas.")
+    .optional(),
+  preferences: z.string().optional(),
 });
