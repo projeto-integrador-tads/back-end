@@ -4,6 +4,7 @@ import { z } from "zod";
 import { calculateDistance } from "../../services/location/calculateDistance";
 import { models } from "../models";
 import { dayjs } from "../../utils/dayjs";
+import { geocodeAddress } from "../../services/location/geocodeAddress";
 
 type CreateRideInput = z.infer<typeof createRideSchema>;
 
@@ -14,18 +15,38 @@ export async function createRide(
   reply: FastifyReply
 ) {
   const {
-    user_id,
     vehicle_id,
     start_location,
     end_location,
+    start_location_id,
+    end_location_id,
     start_time,
     price,
     available_seats,
     preferences,
   } = request.body;
 
+  const user_id = request.userData?.id;
+
+  if (!user_id) {
+    return reply.status(401).send({ error: "Usuário não autenticado." });
+  }
+
+  // Verifica se pelo menos um ID ou endereço foi fornecido para cada localização
+  if (!start_location_id && !start_location) {
+    return reply.status(400).send({
+      error: "O local de partida deve ter um ID ou um endereço.",
+    });
+  }
+
+  if (!end_location_id && !end_location) {
+    return reply.status(400).send({
+      error: "O local de destino deve ter um ID ou um endereço.",
+    });
+  }
+
   try {
-    // verifica a existência do usuário
+    // Verifica a existência do usuário
     const user = await models.user.findUnique({
       where: { id: user_id },
     });
@@ -42,12 +63,7 @@ export async function createRide(
       });
     }
 
-    // Verifica se o usuário possui pelo menos um veículo
-    const userVehicles = await models.vehicle.findMany({
-      where: { owner_id: user_id },
-    });
-
-    if (userVehicles.length === 0) {
+    if (!user.is_driver) {
       return reply.status(400).send({
         error: "Não é possível criar uma corrida sem um veículo.",
       });
@@ -64,15 +80,20 @@ export async function createRide(
       });
     }
 
+    if (!vehicle.active) {
+      return reply.status(400).send({
+        error: "O veículo está inativo.",
+      });
+    }
+
     // Verifica se o horário de início é pelo menos o horário atual
-    if (dayjs(start_time).isBefore(new Date())) {
+    if (dayjs(start_time).add(2, "hours").isBefore(new Date())) {
       return reply.status(400).send({
         error: "O horário de saída não pode estar no passado.",
       });
     }
 
     // Verifica se já existe uma corrida do mesmo motorista no mesmo dia e horário
-
     const existingRide = await models.ride.findFirst({
       where: {
         driver_id: user_id,
@@ -89,19 +110,86 @@ export async function createRide(
       });
     }
 
-    // Calcula a distância entre as localizações de início e fim
-    const distanceResult = await calculateDistance(
-      start_location,
-      end_location
-    );
-    if (!distanceResult) {
-      return reply.status(400).send({
-        error:
-          "Não foi possível calcular a distância entre as duas localizações.",
+    let startAddress;
+    let endAddress;
+
+    if (start_location_id) {
+      startAddress = await models.address.findUnique({
+        where: { id: start_location_id },
+      });
+
+      if (!startAddress) {
+        return reply.status(400).send({
+          error: "O ID do endereço de partida não é válido.",
+        });
+      }
+    }
+
+    if (end_location_id) {
+      endAddress = await models.address.findUnique({
+        where: { id: end_location_id },
+      });
+
+      if (!endAddress) {
+        return reply.status(400).send({
+          error: "O ID do endereço de destino não é válido.",
+        });
+      }
+    }
+
+    if (!startAddress && start_location) {
+      startAddress = await geocodeAddress(start_location);
+
+      if (!startAddress) {
+        return reply.status(400).send({
+          error: "Não foi possível geocodificar o endereço de partida.",
+        });
+      }
+
+      // Cria um novo endereço se não existir
+      startAddress = await models.address.create({
+        data: {
+          latitude: startAddress.lat,
+          longitude: startAddress.lng,
+          city: startAddress.city,
+          formattedAddress: startAddress.formattedAddress,
+        },
       });
     }
 
-    if (distanceResult.distance < 500) {
+    if (!endAddress && end_location) {
+      endAddress = await geocodeAddress(end_location);
+
+      if (!endAddress) {
+        return reply.status(400).send({
+          error: "Não foi possível geocodificar o endereço de destino.",
+        });
+      }
+
+      // Cria um novo endereço se não existir
+      endAddress = await models.address.create({
+        data: {
+          latitude: endAddress.lat,
+          longitude: endAddress.lng,
+          city: endAddress.city,
+          formattedAddress: endAddress.formattedAddress,
+        },
+      });
+    }
+
+    if (!startAddress || !endAddress) {
+      return reply.status(400).send({
+        error: "Endereços de partida e/ou destino não encontrados.",
+      });
+    }
+
+    // Calcula a distância entre as localizações de início e fim
+    const distanceResult = await calculateDistance(
+      startAddress.formattedAddress,
+      endAddress.formattedAddress
+    );
+
+    if (!distanceResult || distanceResult.distance < 500) {
       return reply.status(400).send({
         error:
           "A distância entre o ponto de partida e o ponto de chegada deve ser de pelo menos 500 metros.",
@@ -113,8 +201,8 @@ export async function createRide(
       data: {
         driver_id: user_id,
         vehicle_id,
-        start_location,
-        end_location,
+        start_address_id: startAddress.id,
+        end_address_id: endAddress.id,
         start_time,
         price,
         available_seats,
@@ -126,8 +214,8 @@ export async function createRide(
     request.server.eventBus.emit("rideCreated", {
       name: user.name,
       email: user.email,
-      start_location,
-      end_location,
+      start_location: startAddress.formattedAddress,
+      end_location: endAddress.formattedAddress,
       start_time,
       price,
       available_seats,
