@@ -24,14 +24,14 @@ export async function calculateDistance(
     if (data.status !== "OK") {
       console.error(
         "Error in response:",
-        data.error_message || "Unknown error"
+        data.error_message || "Erro desconhecido"
       );
       return null;
     }
 
     const element = data.rows[0].elements[0];
     if (element.status !== "OK") {
-      console.error("Error in response:", element.status);
+      console.error("Erro na resposta:", element.status);
       return null;
     }
 
@@ -40,7 +40,7 @@ export async function calculateDistance(
       duration: element.duration.text,
     };
   } catch (error) {
-    console.error("Error during distance calculation:", error);
+    console.error("Erro durante o cálculo de distância:", error);
     return null;
   }
 }

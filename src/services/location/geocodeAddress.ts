@@ -1,6 +1,8 @@
 interface Location {
   lat: number;
   lng: number;
+  city: string;
+  formattedAddress: string;
 }
 
 const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -17,16 +19,36 @@ export async function geocodeAddress(
     const data = await response.json();
 
     if (data.status === "OK") {
-      const location = data.results[0].geometry.location;
+      const result = data.results[0];
+      const location = result.geometry.location;
+
+      // Procura pela cidade nos componentes de endereço
+      const addressComponents = result.address_components;
+      let city = "";
+      for (const component of addressComponents) {
+        if (
+          component.types.includes("locality") ||
+          component.types.includes("administrative_area_level_2")
+        ) {
+          city = component.long_name;
+          break;
+        }
+      }
+
       return {
         lat: location.lat,
         lng: location.lng,
+        city: city,
+        formattedAddress: result.formatted_address,
       };
     }
-    console.error("Geocoding failed:", data.error_message || "Unknown error");
+    console.error(
+      "Falha na geocodificação:",
+      data.error_message || "Erro desconhecido"
+    );
     return null;
   } catch (error) {
-    console.error("Error during geocoding:", error);
+    console.error("Erro durante a geocodificação:", error);
     return null;
   }
 }

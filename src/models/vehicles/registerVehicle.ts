@@ -10,16 +10,14 @@ export const registerVehicle = async (
   request: FastifyRequest<{ Body: VehicleRequestBody }>,
   response: FastifyReply
 ) => {
-  const {
-    owner_id,
-    brand,
-    model,
-    year,
-    license_plate,
-    color,
-    seats,
-    document,
-  } = request.body;
+  const { brand, model, year, license_plate, color, seats, document } =
+    request.body;
+
+  const owner_id = request.userData?.id;
+
+  if (!owner_id) {
+    throw new Error();
+  }
 
   try {
     const owner = await models.user.findUnique({
@@ -42,6 +40,15 @@ export const registerVehicle = async (
         color,
         seats,
         document,
+      },
+    });
+
+    await models.user.update({
+      where: {
+        id: owner_id,
+      },
+      data: {
+        is_driver: true,
       },
     });
 
