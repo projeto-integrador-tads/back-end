@@ -11,15 +11,21 @@ import { ridesController } from "./controllers/rides/ridesController";
 import { userController } from "./controllers/users/userController";
 import { vehicleController } from "./controllers/vehicles/vehicleController";
 import { reservationController } from "./controllers/reservations/reservationController";
+import jwtPlugin from "./plugins/jwtPlugin";
+import { loginController } from "./controllers/authController/auth";
+import { geocodeAddress } from "./services/location/geocodeAddress";
+
 const app = Fastify();
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+app.register(jwtPlugin);
 app.register(userController);
 app.register(vehicleController);
 app.register(ridesController);
 app.register(reservationController);
+app.register(loginController);
 
 app.register(eventPlugin);
 
