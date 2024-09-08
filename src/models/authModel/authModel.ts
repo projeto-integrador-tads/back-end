@@ -15,13 +15,19 @@ export default async function loginHandler(
   try {
     const user = await models.user.findUnique({
       where: { email },
-      select: { password: true, name: true, last_name: true, id: true },
     });
 
     if (!user) {
       return reply.status(401).send({ error: "Usuário não encontrado." });
     }
 
+    if (!user.active) {
+      models.user.update({ where: { id: user.id }, data: { active: true } });
+      request.server.eventBus.emit("accountReactivated", {
+        email: user.email,
+        name: user.name,
+      });
+    }
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {

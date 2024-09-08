@@ -13,7 +13,6 @@ import { vehicleController } from "./controllers/vehicles/vehicleController";
 import { reservationController } from "./controllers/reservations/reservationController";
 import jwtPlugin from "./plugins/jwtPlugin";
 import { loginController } from "./controllers/authController/auth";
-import { geocodeAddress } from "./services/location/geocodeAddress";
 
 const app = Fastify();
 
@@ -48,3 +47,5 @@ app
     console.error("Falha ao iniciar o servidor:", err);
     process.exit(1);
   });
+
+export default app;
