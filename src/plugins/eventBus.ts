@@ -8,7 +8,7 @@ declare module "fastify" {
   }
 }
 
-async function eventBus(fastify: FastifyInstance, options: any) {
+async function eventBus(fastify: FastifyInstance) {
   fastify.decorate("eventBus", new EventEmitter());
 
   fastify.addHook("onClose", (instance, done) => {

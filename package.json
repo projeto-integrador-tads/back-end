@@ -4,17 +4,21 @@
   "description": "Versão backend em node",
   "main": "server.ts",
   "scripts": {
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@types/node": "^22.3.0",
     "prisma": "^5.18.0",
     "tsx": "^4.17.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   },
   "dependencies": {
+    "@fastify/jwt": "^8.0.1",
     "@prisma/client": "^5.18.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/bcrypt": "^5.0.2",

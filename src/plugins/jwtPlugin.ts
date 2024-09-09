@@ -4,8 +4,9 @@ import fastifyJWT from "@fastify/jwt";
 import { JwtPayload } from "../types";
 
 async function jwtAuth(fastify: FastifyInstance) {
+  const JWT_SIGNING_SECRET = process.env.JWT_SECRET;
   fastify.register(fastifyJWT, {
-    secret: process.env.JWT_SIGNING_SECRET || "DHAUIOghoeui3920q0rte3qwe",
+    secret: JWT_SIGNING_SECRET!,
   });
 
   fastify.decorate(
