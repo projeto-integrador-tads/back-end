@@ -5,7 +5,10 @@ export const getUserById = async (
   request: FastifyRequest<{ Params: { id: string } }>,
   reply: FastifyReply
 ) => {
-  const id = request.params.id;
+  const id = request.userData?.id;
+  if (!id) {
+    throw new Error("Erro ao validar o id.");
+  }
   try {
     const user = await models.user.findUnique({ where: { id } });
     if (!user) {

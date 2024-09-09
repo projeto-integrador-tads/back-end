@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@prisma/client";
 import { models } from "../../models/models";
-import { hashPassword } from "../../services/security/userService";
+import { hashPassword } from "../../services/security/encrypt";
 import { userSchema } from "../../utils/schemas";
 import { TypeOf } from "zod";
 
