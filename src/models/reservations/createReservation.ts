@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../../models/models";
 import { createReservationSchema } from "../../utils/schemas";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
 type CreateReservationInput = z.infer<typeof createReservationSchema>;
 
 export const createReservation = async (
@@ -14,7 +13,7 @@ export const createReservation = async (
     const passenger_id = request.userData?.id;
 
     if (!passenger_id) {
-      throw new Error("User ID is missing.");
+      throw new Error("O usuário não está logado.");
     }
 
     // Verificar se a carona existe
@@ -24,6 +23,17 @@ export const createReservation = async (
 
     if (!ride) {
       return reply.status(404).send({ error: "Corrida não encontrada." });
+    }
+
+    if (
+      ride.status === "CANCELLED" ||
+      ride.status === "COMPLETED" ||
+      ride.status === "IN_PROGRESS"
+    ) {
+      return reply.status(404).send({
+        error:
+          "Não é possível reservar uma corrida que está cancelada, completa ou em progresso.",
+      });
     }
 
     // Verifica se o usuário existe
@@ -63,8 +73,6 @@ export const createReservation = async (
           status: { not: "CANCELLED" },
         },
       });
-
-      console.log("Existing Reservation:", existingReservation);
 
       if (existingReservation) {
         return reply.status(400).send({
