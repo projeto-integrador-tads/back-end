@@ -41,10 +41,19 @@ export const cancelReservation = async (
       data: { status: "CANCELLED" },
     });
 
+    // Verificar o número de assentos disponíveis antes da atualização
+    const ride = await models.ride.findUnique({
+      where: { ride_id: reservation.ride_id },
+    });
+
+    if (!ride) {
+      return reply.status(404).send({ error: "Corrida não encontrada." });
+    }
+
     // Atualizar o número de assentos disponíveis na corrida
     await models.ride.update({
       where: { ride_id: reservation.ride_id },
-      data: { available_seats: { increment: 1 } },
+      data: { available_seats: ride.available_seats + 1 },
     });
 
     return reply
