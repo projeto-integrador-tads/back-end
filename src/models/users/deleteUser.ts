@@ -6,11 +6,19 @@ export const deleteUser = async (
   request: FastifyRequest<{ Params: { id: string } }>,
   reply: FastifyReply
 ) => {
-  const id = request.params.id;
+  const id = request.userData?.id;
+  if (!id) {
+    throw new Error("Erro ao validar o id.");
+  }
   try {
-    await models.user.update({
+    const user = await models.user.update({
       where: { id },
       data: { active: false },
+    });
+
+    request.server.eventBus.emit("accountDeactivated", {
+      email: user.email,
+      name: user.name,
     });
 
     return reply.status(204).send();

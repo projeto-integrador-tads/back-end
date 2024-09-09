@@ -8,19 +8,18 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(uuid())
-  name              String
-  last_name         String
-  email             String    @unique
-  email_verified_at DateTime?
-  password          String
-  phone_number      String?
-  profile_picture   String?
-  rememberToken     String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  active            Boolean   @default(true)
-
+  id               String        @id @default(uuid())
+  name             String
+  last_name        String
+  email            String        @unique
+  password         String
+  phone_number     String?
+  profile_picture  String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  active           Boolean       @default(true)
+  is_driver        Boolean       @default(false)
+  savedAddresses   Address[]     @relation("UserSavedAddresses")
   ReviewsWritten   Review[]      @relation("Reviewer")
   ReviewsReceived  Review[]      @relation("Reviewee")
   RidesDriven      Ride[]        @relation("Driver")
@@ -30,39 +29,53 @@ model User {
   MessagesReceived Message[]     @relation("MessagesReceived")
 }
 
-model Ride {
-  ride_id         String     @id @default(uuid())
-  driver_id       String
-  vehicle_id      String
-  start_location  String
-  end_location    String
-  start_time      DateTime
-  end_time        DateTime?
-  price           Decimal    @db.Decimal(10, 2)
-  available_seats Int
-  preferences     String
-  status          RideStatus
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+model Address {
+  id               String   @id @default(uuid())
+  latitude         Float
+  longitude        Float
+  city             String
+  formattedAddress String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User?    @relation("UserSavedAddresses", fields: [userId], references: [id])
+  userId           String?
+  ridesAsStart     Ride[]   @relation("RideStartAddress")
+  ridesAsEnd       Ride[]   @relation("RideEndAddress")
+}
 
-  Driver       User          @relation(fields: [driver_id], references: [id], name: "Driver")
-  Vehicle      Vehicle       @relation(fields: [vehicle_id], references: [vehicle_id])
-  Reviews      Review[]
-  Reservations Reservation[]
-  Messages     Message[]
+model Ride {
+  ride_id          String        @id @default(uuid())
+  driver_id        String
+  vehicle_id       String
+  start_address_id String
+  end_address_id   String
+  start_time       DateTime
+  end_time         DateTime?
+  price            Decimal       @db.Decimal(10, 2)
+  available_seats  Int
+  preferences      String
+  status           RideStatus
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  Driver           User          @relation(fields: [driver_id], references: [id], name: "Driver")
+  Vehicle          Vehicle       @relation(fields: [vehicle_id], references: [vehicle_id])
+  StartAddress     Address       @relation("RideStartAddress", fields: [start_address_id], references: [id])
+  EndAddress       Address       @relation("RideEndAddress", fields: [end_address_id], references: [id])
+  Reviews          Review[]
+  Reservations     Reservation[]
+  Messages         Message[]
 }
 
 model Reservation {
   reservation_id String            @id @default(uuid())
   ride_id        String
-  passenger_id   String            @unique
+  passenger_id   String
   status         ReservationStatus
   payment_status PaymentStatus
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
-
-  Ride      Ride @relation(fields: [ride_id], references: [ride_id])
-  Passenger User @relation(fields: [passenger_id], references: [id], name: "Passenger")
+  Ride           Ride              @relation(fields: [ride_id], references: [ride_id])
+  Passenger      User              @relation(fields: [passenger_id], references: [id], name: "Passenger")
 }
 
 model Review {
@@ -74,10 +87,9 @@ model Review {
   comment     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  Ride     Ride @relation(fields: [ride_id], references: [ride_id])
-  Reviewer User @relation("Reviewer", fields: [reviewer_id], references: [id])
-  Reviewee User @relation("Reviewee", fields: [reviewee_id], references: [id])
+  Ride        Ride     @relation(fields: [ride_id], references: [ride_id])
+  Reviewer    User     @relation("Reviewer", fields: [reviewer_id], references: [id])
+  Reviewee    User     @relation("Reviewee", fields: [reviewee_id], references: [id])
 }
 
 model Vehicle {
@@ -85,6 +97,7 @@ model Vehicle {
   owner_id      String
   brand         String   @db.VarChar(50)
   model         String   @db.VarChar(50)
+  active        Boolean  @default(true)
   year          Int
   license_plate String   @unique @db.VarChar(7)
   color         String   @db.VarChar(30)
@@ -92,9 +105,8 @@ model Vehicle {
   document      String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  Owner User   @relation(fields: [owner_id], references: [id])
-  Rides Ride[]
+  Owner         User     @relation(fields: [owner_id], references: [id])
+  Rides         Ride[]
 }
 
 model Message {
@@ -104,10 +116,9 @@ model Message {
   ride_id     String?
   content     String
   createdAt   DateTime @default(now())
-
-  Sender   User  @relation("MessagesSent", fields: [sender_id], references: [id])
-  Receiver User  @relation("MessagesReceived", fields: [receiver_id], references: [id])
-  Ride     Ride? @relation(fields: [ride_id], references: [ride_id])
+  Sender      User     @relation("MessagesSent", fields: [sender_id], references: [id])
+  Receiver    User     @relation("MessagesReceived", fields: [receiver_id], references: [id])
+  Ride        Ride?    @relation(fields: [ride_id], references: [ride_id])
 }
 
 model PasswordResetToken {

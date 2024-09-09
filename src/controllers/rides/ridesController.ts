@@ -1,7 +1,17 @@
 import { FastifyPluginAsync } from "fastify";
-import { createRideSchema, updateRideSchema } from "../../utils/schemas";
+import {
+  cancelRideSchema,
+  createRideSchema,
+  updateRideSchema,
+} from "../../utils/schemas";
 import { createRide } from "../../models/rides/createRide";
 import { updateRide } from "../../models/rides/updateRide";
+import { getRidesByDriver } from "../../models/rides/getRides";
+import { cancelRide } from "../../models/rides/cancelRide";
+import {
+  getRidesByStartCity,
+  getRidesByDestinationCity,
+} from "../../models/rides/getRides"; // Importa as funções
 
 export const ridesController: FastifyPluginAsync = async (fastify) => {
   fastify.post(
@@ -23,4 +33,18 @@ export const ridesController: FastifyPluginAsync = async (fastify) => {
     },
     updateRide
   );
+
+  fastify.delete(
+    "/rides",
+    {
+      schema: {
+        body: cancelRideSchema,
+      },
+    },
+    cancelRide
+  );
+
+  fastify.get("/rides/driver", getRidesByDriver);
+  fastify.get("/rides/start-city/:city", getRidesByStartCity);
+  fastify.get("/rides/destination-city/:city", getRidesByDestinationCity);
 };

@@ -66,8 +66,6 @@ export const sendRideUpdateNotification = async (
   name: string
 ) => {
   const transporter = await getEmailClient();
-
-  console.log(email);
   await transporter.sendMail({
     from: "integrador@rides.com",
     to: email,
@@ -82,5 +80,71 @@ export const sendRideUpdateNotification = async (
     <p></p>
     <p>Equipe CaronasApp</p>
   </div>`.trim(),
+  });
+};
+
+export const sendRideCancellationNotification = async (
+  email: string,
+  name: string
+) => {
+  const transporter = await getEmailClient();
+  await transporter.sendMail({
+    from: "integrador@rides.com",
+    to: email,
+    subject: "Corrida cancelada! 🚗",
+    html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+  <p>Olá, ${name}!</p>
+  <p>Uma corrida que você reservou foi Cancelada.</p>
+
+  <p>Se você tiver alguma dúvida ou precisar de mais informações, não hesite em nos contatar.</p>
+  <p></p>
+  <p>Boa viagem!</p>
+  <p></p>
+  <p>Equipe CaronasApp</p>
+</div>`.trim(),
+  });
+};
+
+export const sendAccountReactivationEmail = async (
+  email: string,
+  name: string
+) => {
+  const transporter = await getEmailClient();
+  await transporter.sendMail({
+    from: "integrador@rides.com",
+    to: email,
+    subject: "Sua conta foi reativada! 🎉",
+    html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+  <p>Olá, ${name}!</p>
+  <p>Estamos felizes em informar que sua conta foi reativada com sucesso.</p>
+  
+  <p>Agora você pode voltar a utilizar todos os nossos serviços. Se você tiver qualquer dúvida ou precisar de assistência, não hesite em nos contatar.</p>
+  <p></p>
+  <p>Boas viagens!</p>
+  <p></p>
+  <p>Equipe CaronasApp</p>
+</div>`.trim(),
+  });
+};
+
+export const sendAccountDeactivationEmail = async (
+  email: string,
+  name: string
+) => {
+  const transporter = await getEmailClient();
+  await transporter.sendMail({
+    from: "integrador@rides.com",
+    to: email,
+    subject: "Sua conta foi desativada 😢",
+    html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+  <p>Olá, ${name}!</p>
+  <p>Informamos que sua conta foi desativada.</p>
+  
+  <p>Se esta desativação foi um engano ou se você tem alguma dúvida sobre o processo, por favor, entre em contato conosco.</p>
+  <p></p>
+  <p>Atenciosamente,</p>
+  <p></p>
+  <p>Equipe CaronasApp</p>
+</div>`.trim(),
   });
 };

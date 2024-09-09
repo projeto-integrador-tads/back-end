@@ -1,0 +1,33 @@
+{
+    "breadcrumbs.filePath": "off",
+    "outline.icons": false,
+    "editor.fontFamily": "'JetBrains Mono', Consolas, 'Courier New', monospace",
+    "editor.fontLigatures": true,
+    "editor.minimap.renderCharacters": false,
+    "editor.minimap.enabled": false,
+    "editor.fontSize": 14,
+    "editor.lineHeight": 1.8,
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "explorer.compactFolders": false,
+    "editor.cursorBlinking": "smooth",
+    "terminal.integrated.fontSize": 14,
+    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
+    "editor.wordWrap": "on",
+    "editor.rulers": [
+      {
+        "column": 80,
+        "color": "#ffffff13"
+      },
+      {
+        "column": 120,
+        "color": "#ffffff13"
+      }
+    ],
+    "javascript.suggest.autoImports": true,
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "apc.font.family": "Inter",
+    "apc.listRow": {
+      "height": 24
+    },
+}

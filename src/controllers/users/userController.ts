@@ -1,20 +1,31 @@
-import { FastifyPluginAsync } from "fastify";
+import { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { userSchema } from "../../utils/schemas";
 import { registerUser } from "../../models/users/registerUser";
 import { getUserById } from "../../models/users/getUser";
 import { deleteUser } from "../../models/users/deleteUser";
 
-export const userController: FastifyPluginAsync = async (fastify) => {
+interface GetUserByIdParams {
+  id: string;
+}
+
+export const userController: FastifyPluginAsync = async (
+  fastify: FastifyInstance
+) => {
   fastify.post(
     "/users",
     {
       schema: {
         body: userSchema,
       },
+      config: { public: true },
     },
     registerUser
   );
 
-  fastify.get("/users/:id", getUserById);
-  fastify.delete("/users/:id", deleteUser);
+  fastify.get<{ Params: GetUserByIdParams }>(
+    "/users/:id",
+
+    getUserById
+  );
+  fastify.delete<{ Params: GetUserByIdParams }>("/users/:id", deleteUser);
 };
