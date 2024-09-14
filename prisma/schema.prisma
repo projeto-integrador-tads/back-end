@@ -19,6 +19,7 @@ model User {
   updatedAt        DateTime      @updatedAt
   active           Boolean       @default(true)
   is_driver        Boolean       @default(false)
+  average_rating   Float?
   savedAddresses   Address[]     @relation("UserSavedAddresses")
   ReviewsWritten   Review[]      @relation("Reviewer")
   ReviewsReceived  Review[]      @relation("Reviewee")
@@ -84,7 +85,7 @@ model Review {
   reviewer_id String
   reviewee_id String
   rating      Int
-  comment     String
+  comment     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   Ride        Ride     @relation(fields: [ride_id], references: [ride_id])

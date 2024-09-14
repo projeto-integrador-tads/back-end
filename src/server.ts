@@ -13,6 +13,7 @@ import { vehicleController } from "./controllers/vehicles/vehicleController";
 import { reservationController } from "./controllers/reservations/reservationController";
 import jwtPlugin from "./plugins/jwtPlugin";
 import { loginController } from "./controllers/authController/auth";
+import { reviewsController } from "./controllers/reviews/reviewController";
 
 const app = Fastify();
 
@@ -25,6 +26,7 @@ app.register(vehicleController);
 app.register(ridesController);
 app.register(reservationController);
 app.register(loginController);
+app.register(reviewsController);
 
 app.register(eventPlugin);
 
