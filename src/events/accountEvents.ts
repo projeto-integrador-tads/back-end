@@ -3,6 +3,8 @@ import {
   sendWelcomeEmail,
   sendAccountDeactivationEmail,
   sendAccountReactivationEmail,
+  sendPasswordResetEmail,
+  passwordChangedEmail,
 } from "../services/email/emailService";
 
 export const accountEvents = (fastify: FastifyInstance) => {
@@ -38,4 +40,26 @@ export const accountEvents = (fastify: FastifyInstance) => {
       );
     }
   });
+
+  fastify.eventBus.on("forgotPassword", async ({ email, name, resetCode }) => {
+    try {
+      await sendPasswordResetEmail(email, name, resetCode);
+    } catch (emailError) {
+      fastify.log.error(
+        "Falha ao enviar o email de esquecimento de senha:",
+        emailError
+      );
+    }
+  })
+
+  fastify.eventBus.on("passwordChanged", async ({ email, name }) => {
+    try {
+      await passwordChangedEmail(email, name);
+    } catch (emailError) {
+      fastify.log.error(
+        "Falha ao enviar o email de senha alterada:",
+        emailError
+      );
+    }
+  })
 };

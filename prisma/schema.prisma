@@ -123,10 +123,12 @@ model Message {
 }
 
 model PasswordResetToken {
-  email     String   @id
-  token     String
-  createdAt DateTime @default(now())
-  expiresAt DateTime
+  email           String   @id
+  resetCode       String
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime
+  attempts        Int      @default(0)
+  lastEmailSentAt DateTime
 }
 
 enum ReservationStatus {
