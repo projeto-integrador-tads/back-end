@@ -1,13 +1,15 @@
 import nodemailer from "nodemailer";
+import env from "../../../env";
 
 export async function getEmailClient() {
-  const host = process.env.MAIL_SERVICE_HOST;
-  const user = process.env.MAIL_SERVICE_USER;
-  const pass = process.env.MAIL_SERIVCE_PASS;
+  const host = env.MAIL_SERVICE_HOST;
+  const user = env.MAIL_SERVICE_USER;
+  const pass = env.MAIL_SERVICE_PASS;
+  const port = env.MAIL_SERVICE_PORT;
 
   const transporter = nodemailer.createTransport({
     host,
-    port: 2525,
+    port,
     auth: {
       user,
       pass,

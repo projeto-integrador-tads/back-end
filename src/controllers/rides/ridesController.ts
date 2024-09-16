@@ -11,7 +11,7 @@ import { cancelRide } from "../../models/rides/cancelRide";
 import {
   getRidesByStartCity,
   getRidesByDestinationCity,
-} from "../../models/rides/getRides"; // Importa as funções
+} from "../../models/rides/getRides";
 
 export const ridesController: FastifyPluginAsync = async (fastify) => {
   fastify.post(

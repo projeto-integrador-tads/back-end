@@ -1,3 +1,5 @@
+import env from "../../../env";
+
 interface Location {
   lat: number;
   lng: number;
@@ -5,7 +7,7 @@ interface Location {
   formattedAddress: string;
 }
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = env.GOOGLE_MAPS_API_KEY;
 
 export async function geocodeAddress(
   address: string

@@ -148,3 +148,45 @@ export const sendAccountDeactivationEmail = async (
 </div>`.trim(),
   });
 };
+
+export const sendPasswordResetEmail = async (
+  email: string,
+  name: string,
+  resetCode: string
+) => {
+  const transporter = await getEmailClient();
+  await transporter.sendMail({
+    from: "integrador@rides.com",
+    to: email,
+    subject: "Redefinição de Senha",
+    html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+  <p>Olá, ${name}!</p>
+  <p>Recebemos uma solicitação para redefinir sua senha. Use o código abaixo para prosseguir com a redefinição:</p>
+  <h2 style="font-size: 24px; font-weight: bold; text-align: center;">${resetCode}</h2>
+  <p>Este código expirará em 15 minutos.</p>
+  <p>Se você não solicitou a redefinição de senha, por favor, ignore este e-mail.</p>
+  <p></p>
+  <p>Atenciosamente,</p>
+  <p>Equipe CaronasApp</p>
+</div>`.trim(),
+  });
+};
+
+export const passwordChangedEmail = async (
+  email: string,
+  name: string) => {
+  const transporter = await getEmailClient();
+  await transporter.sendMail({
+    from: "integrador@rides.com",
+    to: email,
+    subject: "Sua senha foi alterada",
+    html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+    <p>Olá, ${name}!</p>
+    <p>Informamos que sua senha foi alterada recentemente.</p>
+    <p>Se você não realizou essa alteração, por favor, entre em contato conosco imediatamente.</p>
+    <p></p>
+    <p>Atenciosamente,</p>
+    <p>Equipe CaronasApp</p>
+  </div>`.trim(),
+  });
+};

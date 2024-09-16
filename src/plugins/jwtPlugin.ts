@@ -2,9 +2,10 @@ import fp from "fastify-plugin";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fastifyJWT from "@fastify/jwt";
 import { JwtPayload } from "../types";
+import env from "../../env";
 
 async function jwtAuth(fastify: FastifyInstance) {
-  const JWT_SIGNING_SECRET = process.env.JWT_SECRET;
+  const JWT_SIGNING_SECRET = env.JWT_SECRET;
   fastify.register(fastifyJWT, {
     secret: JWT_SIGNING_SECRET!,
   });
