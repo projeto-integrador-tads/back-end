@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "production", "test"]),
+const testEnvSchema = z.object({
+  NODE_ENV: z.enum(["test"]),
   DATABASE_URL: z.string().url(),
   GOOGLE_MAPS_API_KEY: z.string(),
   MAIL_SERVICE_USER: z.string(),
@@ -15,6 +15,6 @@ const envSchema = z.object({
   BUCKET_NAME: z.string(),
 });
 
-const env = envSchema.parse(process.env);
+const testEnv = testEnvSchema.parse(process.env);
 
-export default env;
+export default testEnv;

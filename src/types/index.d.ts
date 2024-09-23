@@ -1,4 +1,5 @@
 import "fastify";
+import WebSocket from "ws";
 
 interface JwtPayload {
   email: string;
@@ -10,11 +11,6 @@ interface JwtPayload {
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: import("fastify").FastifyMiddleware;
-  }
-  interface FastifyRequest {
-    user: {
-      id: string;
-    };
   }
 
   interface FastifyRequest {
