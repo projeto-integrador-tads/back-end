@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from "fastify";
 import {
   cancelRideSchema,
   createRideSchema,
+  paginationSchema,
   updateRideSchema,
 } from "../../utils/schemas";
 import { createRide } from "../../models/rides/createRide";
@@ -44,7 +45,31 @@ export const ridesController: FastifyPluginAsync = async (fastify) => {
     cancelRide
   );
 
-  fastify.get("/rides/driver", getRidesByDriver);
-  fastify.get("/rides/start-city/:city", getRidesByStartCity);
-  fastify.get("/rides/destination-city/:city", getRidesByDestinationCity);
+  fastify.get(
+    "/rides/driver",
+    {
+      schema: {
+        querystring: paginationSchema,
+      },
+    },
+    getRidesByDriver
+  );
+  fastify.get(
+    "/rides/start-city/:city",
+    {
+      schema: {
+        querystring: paginationSchema,
+      },
+    },
+    getRidesByStartCity
+  );
+  fastify.get(
+    "/rides/destination-city/:city",
+    {
+      schema: {
+        querystring: paginationSchema,
+      },
+    },
+    getRidesByDestinationCity
+  );
 };

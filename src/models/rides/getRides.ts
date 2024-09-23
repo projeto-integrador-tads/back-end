@@ -1,5 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
+import { paginate } from "../../utils/paginate";
+import { Ride } from "@prisma/client";
 
 export async function getRidesByDriver(
   request: FastifyRequest<{
@@ -11,19 +13,21 @@ export async function getRidesByDriver(
   const { page = 1, pageSize = 10 } = request.query;
 
   try {
-    const skip = (page - 1) * pageSize;
-    const rides = await models.ride.findMany({
-      where: { driver_id: driverId },
-      orderBy: { start_time: "desc" },
-      skip,
-      take: pageSize,
-      include: {
-        StartAddress: true,
-        EndAddress: true,
+    const paginatedRides = await paginate<Ride, "ride">(
+      models.ride,
+      {
+        where: { driver_id: driverId },
+        orderBy: { start_time: "desc" },
+        include: {
+          StartAddress: true,
+          EndAddress: true,
+        },
       },
-    });
+      page,
+      pageSize
+    );
 
-    return reply.send({ data: rides });
+    return reply.send(paginatedRides);
   } catch (error) {
     console.error("Erro ao buscar corridas pelo motorista:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
@@ -32,32 +36,34 @@ export async function getRidesByDriver(
 
 export async function getRidesByStartCity(
   request: FastifyRequest<{
-    Querystring: { page: number; pageSize: number };
+    Querystring: { page: number; perPage: number };
     Params: { city: string };
   }>,
   reply: FastifyReply
 ) {
   const { city } = request.params;
-  const { page = 1, pageSize = 10 } = request.query;
+  const { page = 1, perPage = 10 } = request.query;
 
   try {
-    const skip = (page - 1) * pageSize;
-    const rides = await models.ride.findMany({
-      where: {
-        StartAddress: {
-          city: { contains: city },
+    const paginatedRides = await paginate<Ride, "ride">(
+      models.ride,
+      {
+        where: {
+          StartAddress: {
+            city: { contains: city },
+          },
+        },
+        orderBy: { start_time: "desc" },
+        include: {
+          StartAddress: true,
+          EndAddress: true,
         },
       },
-      orderBy: { start_time: "desc" },
-      skip,
-      take: pageSize,
-      include: {
-        StartAddress: true,
-        EndAddress: true,
-      },
-    });
+      page,
+      perPage
+    );
 
-    return reply.send({ data: rides });
+    return reply.send(paginatedRides);
   } catch (error) {
     console.error("Erro ao buscar corridas pela cidade de saída:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
@@ -66,32 +72,34 @@ export async function getRidesByStartCity(
 
 export async function getRidesByDestinationCity(
   request: FastifyRequest<{
-    Querystring: { page: number; pageSize: number };
+    Querystring: { page: number; perPage: number };
     Params: { city: string };
   }>,
   reply: FastifyReply
 ) {
   const { city } = request.params;
-  const { page = 1, pageSize = 10 } = request.query;
+  const { page = 1, perPage = 10 } = request.query;
 
   try {
-    const skip = (page - 1) * pageSize;
-    const rides = await models.ride.findMany({
-      where: {
-        EndAddress: {
-          city: { contains: city },
+    const paginatedRides = await paginate<Ride, "ride">(
+      models.ride,
+      {
+        where: {
+          EndAddress: {
+            city: { contains: city },
+          },
+        },
+        orderBy: { start_time: "desc" },
+        include: {
+          StartAddress: true,
+          EndAddress: true,
         },
       },
-      orderBy: { start_time: "desc" },
-      skip,
-      take: pageSize,
-      include: {
-        StartAddress: true,
-        EndAddress: true,
-      },
-    });
+      page,
+      perPage
+    );
 
-    return reply.send({ data: rides });
+    return reply.send(paginatedRides);
   } catch (error) {
     console.error("Erro ao buscar corridas pelo destino:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
