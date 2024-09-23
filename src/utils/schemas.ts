@@ -119,12 +119,16 @@ export const forgotPasswordSchema = z.object({
 
 export const verifyResetCodeSchema = z.object({
   email: z.string().email("Email em formato inválido."),
-  resetCode: z.string().length(6, "O código de redefinição deve ter 6 dígitos."),
+  resetCode: z
+    .string()
+    .length(6, "O código de redefinição deve ter 6 dígitos."),
 });
 
 export const resetPasswordSchema = z.object({
   email: z.string().email("Email em formato inválido."),
-  resetCode: z.string().length(6, "O código de redefinição deve ter 6 dígitos."),
+  resetCode: z
+    .string()
+    .length(6, "O código de redefinição deve ter 6 dígitos."),
   newPassword: z
     .string()
     .regex(password, {
@@ -132,4 +136,33 @@ export const resetPasswordSchema = z.object({
         "A nova senha deve conter pelo menos 1 letra maiúscula, 1 letra minúscula, 1 número e pode conter caracteres especiais.",
     })
     .min(8, "A nova senha precisa conter pelo menos 8 caracteres."),
+});
+
+export const sendMessageSchema = z.object({
+  ride_id: z.string().uuid(),
+  content: z.string().min(1).max(500),
+});
+
+export const updateVehicleSchema = z.object({
+  vehicle_id: z.string().uuid(),
+  color: z.string().min(2).max(30).optional(),
+  seats: z.number().int().min(1).max(50).optional(),
+});
+
+export const paginationSchema = z.object({
+  page: z.coerce.number().optional().default(1),
+  perPage: z.coerce.number().optional().default(10),
+});
+
+export const updateUserSchema = z.object({
+  name: z.string().min(3, "Nome inválido.").optional(),
+  last_name: z.string().min(3, "Sobrenome inválido.").optional(),
+  phone_number: z
+    .string()
+    .regex(phone, { message: "Número inválido." })
+    .optional(),
+});
+
+export const messageListingParamans = z.object({
+  ride_id: z.string().uuid("Forneça um UUID válido."),
 });

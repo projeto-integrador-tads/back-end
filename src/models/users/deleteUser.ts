@@ -7,9 +7,6 @@ export const deleteUser = async (
   reply: FastifyReply
 ) => {
   const id = request.userData?.id;
-  if (!id) {
-    throw new Error("Erro ao validar o id.");
-  }
   try {
     const user = await models.user.update({
       where: { id },

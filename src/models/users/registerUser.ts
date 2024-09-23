@@ -4,6 +4,7 @@ import { models } from "../../models/models";
 import { hashPassword } from "../../services/security/encrypt";
 import { userSchema } from "../../utils/schemas";
 import { TypeOf } from "zod";
+import { sanitizeUser } from "../../utils/sanitize";
 
 type UserRequestBody = TypeOf<typeof userSchema>;
 
@@ -28,7 +29,7 @@ export const registerUser = async (
 
     request.server.eventBus.emit("userRegistered", { email, name });
 
-    return { user_id: user.id, name, last_name, email, phone_number };
+    return sanitizeUser(user);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
