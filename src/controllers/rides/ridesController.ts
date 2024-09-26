@@ -1,21 +1,27 @@
 import { FastifyPluginAsync } from "fastify";
 import {
-  cancelRideSchema,
-  createRideSchema,
+  // cancelRideSchema,
+  // createRideSchema,
+  // getRideByIdSchema,
   paginationSchema,
-  updateRideSchema,
 } from "../../utils/schemas";
 import { createRide } from "../../models/rides/createRide";
 import { updateRide } from "../../models/rides/updateRide";
-import { getRidesByDriver } from "../../models/rides/getRides";
+import { getRideById, getRidesByDriver } from "../../models/rides/getRides";
 import { cancelRide } from "../../models/rides/cancelRide";
 import {
   getRidesByStartCity,
   getRidesByDestinationCity,
 } from "../../models/rides/getRides";
+import { startRide } from "../../models/rides/startRide";
+import {
+  createRideSchema,
+  rideIdSchema,
+  updateRideSchema,
+} from "../../models/rides/validations/schemas";
 
-export const ridesController: FastifyPluginAsync = async (fastify) => {
-  fastify.post(
+export const ridesController: FastifyPluginAsync = async (app) => {
+  app.post(
     "/rides",
     {
       schema: {
@@ -25,7 +31,7 @@ export const ridesController: FastifyPluginAsync = async (fastify) => {
     createRide
   );
 
-  fastify.put(
+  app.put(
     "/rides",
     {
       schema: {
@@ -35,17 +41,17 @@ export const ridesController: FastifyPluginAsync = async (fastify) => {
     updateRide
   );
 
-  fastify.delete(
-    "/rides",
+  app.delete(
+    "/rides/:id",
     {
       schema: {
-        body: cancelRideSchema,
+        params: rideIdSchema,
       },
     },
     cancelRide
   );
 
-  fastify.get(
+  app.get(
     "/rides/driver",
     {
       schema: {
@@ -54,7 +60,7 @@ export const ridesController: FastifyPluginAsync = async (fastify) => {
     },
     getRidesByDriver
   );
-  fastify.get(
+  app.get(
     "/rides/start-city/:city",
     {
       schema: {
@@ -63,7 +69,7 @@ export const ridesController: FastifyPluginAsync = async (fastify) => {
     },
     getRidesByStartCity
   );
-  fastify.get(
+  app.get(
     "/rides/destination-city/:city",
     {
       schema: {
@@ -71,5 +77,21 @@ export const ridesController: FastifyPluginAsync = async (fastify) => {
       },
     },
     getRidesByDestinationCity
+  );
+
+  app.get(
+    "/rides/:rideId",
+    {
+      schema: {
+        params: rideIdSchema,
+      },
+    },
+    getRideById
+  );
+
+  app.post(
+    "/rides/start/:rideId",
+    { schema: { params: rideIdSchema } },
+    startRide
   );
 };
