@@ -17,6 +17,7 @@ import websocket from "@fastify/websocket";
 import { messageController } from "../controllers/messages/messageController";
 import fastifyMultipart from "@fastify/multipart";
 import { ZodError } from "zod";
+import { addressController } from "../controllers/addresses/addressController";
 
 const app = Fastify();
 
@@ -34,6 +35,7 @@ app.register(reviewsController);
 app.register(websocket);
 app.register(eventPlugin);
 app.register(messageController);
+app.register(addressController);
 
 app.setErrorHandler((error, request, reply) => {
   if (error instanceof ZodError) {
@@ -54,8 +56,6 @@ app.ready((err) => {
     process.exit(1);
   }
   setupEvents(app);
-
-  console.log("Servidor pronto para receber requisições.");
 });
 
 export default app;

@@ -6,14 +6,14 @@ import {
   userSchema,
   verifyResetCodeSchema,
 } from "../../utils/schemas";
-import loginHandler from "../../models/auth/authModel";
+import loginHandler from "../../models/auth/login";
 import { registerUser } from "../../models/users/registerUser";
 import { forgotPassword } from "../../models/auth/forgotPassword";
 import { verifyResetCode } from "../../models/auth/verifyResetCode";
 import { resetPassword } from "../../models/auth/resetPassword";
 
-export async function authController(fastify: FastifyInstance) {
-  fastify.post(
+export async function authController(app: FastifyInstance) {
+  app.post(
     "/login",
     {
       schema: {
@@ -24,7 +24,7 @@ export async function authController(fastify: FastifyInstance) {
     loginHandler
   );
 
-  fastify.post(
+  app.post(
     "/register",
     {
       schema: {
@@ -35,7 +35,7 @@ export async function authController(fastify: FastifyInstance) {
     registerUser
   );
 
-  fastify.post(
+  app.post(
     "/forgot-password",
     {
       schema: {
@@ -46,7 +46,7 @@ export async function authController(fastify: FastifyInstance) {
     forgotPassword
   );
 
-  fastify.post(
+  app.post(
     "/verify-reset-code",
     {
       schema: {
@@ -57,7 +57,7 @@ export async function authController(fastify: FastifyInstance) {
     verifyResetCode
   );
 
-  fastify.post(
+  app.post(
     "/reset-password",
     {
       schema: {

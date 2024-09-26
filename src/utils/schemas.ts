@@ -34,54 +34,60 @@ export const vehicleSchema = z.object({
   document: z.string().min(1, "Documento é obrigatório."),
 });
 
-export const createRideSchema = z
-  .object({
-    vehicle_id: z.string().uuid(),
-    start_location_id: z.string().uuid().optional(),
-    end_location_id: z.string().uuid().optional(),
-    start_location: z.string().optional(),
-    end_location: z.string().optional(),
-    start_time: z.coerce.date({ message: "Digite uma data válida." }),
-    price: z.number().positive(),
-    available_seats: z
-      .number()
-      .int()
-      .positive()
-      .min(1, "A corrida deve conter pelo menos um assento disponível.")
-      .max(50, "Não é possível adicionar mais de 50 pessoas."),
-    preferences: z.string(),
-  })
-  .refine((data) => data.start_location_id || data.start_location, {
-    message: "Informe o ID ou o endereço de partida.",
-    path: ["start_location"],
-  })
-  .refine((data) => data.end_location_id || data.end_location, {
-    message: "Informe o ID ou o endereço de destino.",
-    path: ["end_location"],
-  });
+// export const createRideSchema = z
+//   .object({
+//     vehicle_id: z.string().uuid(),
+//     start_location_id: z.string().uuid().optional(),
+//     end_location_id: z.string().uuid().optional(),
+//     start_latitude: z.number().optional(),
+//     start_longitude: z.number().optional(),
+//     end_latitude: z.number().optional(),
+//     end_longitude: z.number().optional(),
+//     start_time: z.coerce.date({ message: "Digite uma data válida." }),
+//     price: z.number().positive(),
+//     available_seats: z
+//       .number()
+//       .int()
+//       .positive()
+//       .min(1, "A corrida deve conter pelo menos um assento disponível.")
+//       .max(50, "Não é possível adicionar mais de 50 pessoas."),
+//     preferences: z.string(),
+//   })
+//   .refine(
+//     (data) =>
+//       (data.start_location_id ||
+//         (data.start_latitude && data.start_longitude)) &&
+//       (data.end_location_id || (data.end_latitude && data.end_longitude)),
+//     {
+//       message:
+//         "Informe o ID ou as coordenadas para os endereços de partida e destino.",
+//     }
+//   );
 
 export const createReservationSchema = z.object({
-  ride_id: z.string().uuid(),
+  rideId: z.string().uuid(),
 });
 
-export const updateRideSchema = z.object({
-  ride_id: z.string().uuid("ID da corrida inválido."),
-  start_location_id: z.string().uuid().optional(),
-  end_location_id: z.string().uuid().optional(),
-  vehicle_id: z.string().uuid().optional(),
-  start_location: z.string().optional(),
-  end_location: z.string().optional(),
-  start_time: z.coerce.date().optional(),
-  price: z.number().positive().optional(),
-  available_seats: z
-    .number()
-    .int()
-    .positive()
-    .min(1, "A corrida deve conter pelo menos um assento disponível.")
-    .max(50, "Não é possível adicionar mais de 50 pessoas.")
-    .optional(),
-  preferences: z.string().optional(),
-});
+// export const updateRideSchema = z.object({
+//   ride_id: z.string().uuid("ID da corrida inválido."),
+//   start_location_id: z.string().uuid().optional(),
+//   end_location_id: z.string().uuid().optional(),
+//   vehicle_id: z.string().uuid().optional(),
+//   start_latitude: z.number().optional(),
+//   start_longitude: z.number().optional(),
+//   end_latitude: z.number().optional(),
+//   end_longitude: z.number().optional(),
+//   start_time: z.coerce.date().optional(),
+//   price: z.number().positive().optional(),
+//   available_seats: z
+//     .number()
+//     .int()
+//     .positive()
+//     .min(1, "A corrida deve conter pelo menos um assento disponível.")
+//     .max(50, "Não é possível adicionar mais de 50 pessoas.")
+//     .optional(),
+//   preferences: z.string().optional(),
+// });
 
 export const loginSchema = z.object({
   email: z.string().email({ message: "Email inválido." }),
@@ -90,9 +96,9 @@ export const loginSchema = z.object({
     .min(8, { message: "A senha precisa conter pelo menos 8 caracteres." }),
 });
 
-export const cancelRideSchema = z.object({
-  ride_id: z.string().uuid(),
-});
+// export const cancelRideSchema = z.object({
+//   ride_id: z.string().uuid(),
+// });
 
 export const deleteVehicleSchema = z.object({
   vehicle_id: z.string().uuid("ID do veículo deve ser um UUID válido"),
@@ -165,4 +171,80 @@ export const updateUserSchema = z.object({
 
 export const messageListingParamans = z.object({
   ride_id: z.string().uuid("Forneça um UUID válido."),
+});
+
+export const createAddressSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+});
+
+export const deleteAddressSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const addressIdSchema = z.object({
+  id: z.string().uuid(),
+});
+
+// export const createRideSchemaRefactor = z
+//   .object({
+//     vehicle_id: z.string().uuid(),
+//     start_location_id: z.string().uuid().optional(),
+//     end_location_id: z.string().uuid().optional(),
+//     start_latitude: z.number().optional(),
+//     start_longitude: z.number().optional(),
+//     end_latitude: z.number().optional(),
+//     end_longitude: z.number().optional(),
+//     start_time: z.coerce.date({ message: "Digite uma data válida." }),
+//     price: z.number().positive(),
+//     available_seats: z
+//       .number()
+//       .int()
+//       .positive()
+//       .min(1, "A corrida deve conter pelo menos um assento disponível.")
+//       .max(50, "Não é possível adicionar mais de 50 pessoas."),
+//     preferences: z.string(),
+//   })
+//   .refine(
+//     (data) =>
+//       (data.start_location_id ||
+//         (data.start_latitude && data.start_longitude)) &&
+//       (data.end_location_id || (data.end_latitude && data.end_longitude)),
+//     {
+//       message:
+//         "Informe o ID ou as coordenadas para os endereços de partida e destino.",
+//     }
+//   );
+
+// export const updateRideSchemaRefactor = z.object({
+//   ride_id: z.string().uuid("ID da corrida inválido."),
+//   start_location_id: z.string().uuid().optional(),
+//   end_location_id: z.string().uuid().optional(),
+//   vehicle_id: z.string().uuid().optional(),
+//   start_latitude: z.number().optional(),
+//   start_longitude: z.number().optional(),
+//   end_latitude: z.number().optional(),
+//   end_longitude: z.number().optional(),
+//   start_time: z.coerce.date().optional(),
+//   price: z.number().positive().optional(),
+//   available_seats: z
+//     .number()
+//     .int()
+//     .positive()
+//     .min(1, "A corrida deve conter pelo menos um assento disponível.")
+//     .max(50, "Não é possível adicionar mais de 50 pessoas.")
+//     .optional(),
+//   preferences: z.string().optional(),
+// });
+
+// export const getRideByIdSchema = z.object({
+//   rideId: z.string().uuid(),
+// });
+
+// export const startRideSchema = z.object({
+//   rideId: z.string().uuid(),
+// });
+
+export const reservationIdSchema = z.object({
+  rideId: z.string().uuid(),
 });

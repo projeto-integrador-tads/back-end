@@ -1,4 +1,4 @@
-import { Address, Ride, User, Vehicle } from "@prisma/client";
+import { Address, Ride, User, Vehicle, Reservation } from "@prisma/client";
 
 export const sanitizeUser = (user: User) => ({
   id: user.id,
@@ -40,4 +40,14 @@ export const sanitizeRide = (ride: Ride) => ({
   available_seats: ride.available_seats,
   preferences: ride.preferences,
   status: ride.status,
+});
+
+export const sanitizeReservation = (reservation: Reservation) => ({
+  reservation_id: reservation.reservation_id,
+  ride_id: reservation.ride_id,
+  passenger_id: reservation.passenger_id,
+  status: reservation.status,
+  payment_status: reservation.payment_status,
+  createdAt: reservation.createdAt,
+  updatedAt: reservation.updatedAt,
 });

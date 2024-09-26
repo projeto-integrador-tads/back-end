@@ -1,5 +1,3 @@
-
-README.md
 # Node Backend - Projeto Integrador
 
 ## Instalação
@@ -20,10 +18,12 @@ npm install
 3. Configure as variáveis de ambiente:
 
 - Copie o arquivo `.env.example` para `.env` e `.env.test`:
+
 ```bash
 cp .env.example .env
 cp .env.example .env.test
 ```
+
 - Edite os arquivos `.env` e `.env.test` com as configurações apropriadas para cada ambiente.
 
 4. Execute as migrações do banco de dados:
@@ -73,7 +73,7 @@ BUCKET_NAME=seu_nome_bucket_s3
 
 Substitua os valores entre aspas pelas suas configurações reais.
 
-## Estrutura do Projeto  
+## Estrutura do Projeto
 
 O projeto segue uma estrutura modular:
 
@@ -85,4 +85,3 @@ O projeto segue uma estrutura modular:
   - `plugins/`: Plugins do Fastify
   - `events/`: Manipuladores de eventos
 - `tests/`: Testes unitários e de integração
-
