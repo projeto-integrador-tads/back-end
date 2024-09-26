@@ -1,29 +1,37 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
+import { paginate } from "../../utils/paginate";
+import { Reservation } from "@prisma/client";
+import { sanitizeReservation } from "../../utils/sanitize";
+import { paginationSchema } from "../../utils/schemas";
+import { z } from "zod";
+
+type getConfirmedReservationsByRideIdInput = z.infer<typeof paginationSchema>;
 
 export async function getConfirmedReservationsByRideId(
-  request: FastifyRequest<{ Params: { ride_id: string } }>,
+  request: FastifyRequest<{
+    Params: { rideId: string };
+    Querystring: getConfirmedReservationsByRideIdInput;
+  }>,
   reply: FastifyReply
 ) {
-  const { ride_id } = request.params;
+  const { rideId } = request.params;
+  const { page = 1, perPage = 10 } = request.query;
 
   try {
-    // Obtém apenas as reservas confirmadas da corrida
-    const confirmedReservations = await models.reservation.findMany({
-      where: { ride_id, status: "CONFIRMED" },
-    });
+    const paginatedReservations = await paginate<Reservation, "reservation">(
+      models.reservation,
+      {
+        where: { ride_id: rideId, status: "CONFIRMED" },
+        orderBy: { createdAt: "desc" },
+      },
+      page,
+      perPage,
+      sanitizeReservation
+    );
 
-    if (confirmedReservations.length === 0) {
-      return reply
-        .status(404)
-        .send({
-          error: "Nenhuma reserva confirmada encontrada para esta corrida.",
-        });
-    }
-
-    return reply.status(200).send(confirmedReservations);
+    return reply.status(200).send(paginatedReservations);
   } catch (error) {
-    console.error("Erro ao buscar reservas confirmadas:", error);
     return reply.status(500).send({ error: "Erro interno do servidor." });
   }
 }
