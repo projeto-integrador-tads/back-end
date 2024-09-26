@@ -1,20 +1,15 @@
 import env from "../../../env";
 
 interface Location {
-  lat: number;
-  lng: number;
   city: string;
   formattedAddress: string;
 }
 
-const apiKey = env.GOOGLE_MAPS_API_KEY;
-
-export async function geocodeAddress(
-  address: string
+export async function geocodeCoordinates(
+  latitude: number,
+  longitude: number
 ): Promise<Location | null> {
-  const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    address
-  )}&key=${apiKey}`;
+  const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${env.GOOGLE_MAPS_API_KEY}`;
 
   try {
     const response = await fetch(apiUrl);
@@ -22,8 +17,6 @@ export async function geocodeAddress(
 
     if (data.status === "OK") {
       const result = data.results[0];
-      const location = result.geometry.location;
-
       const addressComponents = result.address_components;
       let city = "";
       for (const component of addressComponents) {
@@ -37,9 +30,7 @@ export async function geocodeAddress(
       }
 
       return {
-        lat: location.lat,
-        lng: location.lng,
-        city: city,
+        city,
         formattedAddress: result.formatted_address,
       };
     }

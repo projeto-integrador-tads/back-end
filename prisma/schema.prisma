@@ -38,6 +38,7 @@ model Address {
   formattedAddress String
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  deleted          Boolean  @default(false)
   user             User?    @relation("UserSavedAddresses", fields: [userId], references: [id])
   userId           String?
   ridesAsStart     Ride[]   @relation("RideStartAddress")
