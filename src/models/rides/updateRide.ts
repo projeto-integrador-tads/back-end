@@ -1,8 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-// import { updateRideSchemaRefactor } from "../../utils/schemas";
-import { z } from "zod";
 import { models } from "../models";
-import { ValidationError } from "../../exeptions/validationError";
 import { sanitizeRide } from "../../utils/sanitize";
 import { getOrCreateAddress } from "../addresses/getOrCreateAddress";
 import {

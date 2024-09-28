@@ -11,6 +11,7 @@ import {
 } from "./validations/validations";
 import { handleValidationError } from "../../exeptions/handleValidationError";
 import { CreateRideInput } from "../../types";
+import { RideStatus } from "../../utils/constants";
 
 export async function createRide(
   request: FastifyRequest<{
@@ -91,7 +92,7 @@ export async function createRide(
         price,
         available_seats,
         preferences,
-        status: "SCHEDULED",
+        status: RideStatus.SCHEDULED,
       },
     });
 

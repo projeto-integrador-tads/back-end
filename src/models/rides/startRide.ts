@@ -6,9 +6,10 @@ import {
   validateRideOwnership,
   validateRideStatus,
 } from "./validations/validations";
-import { validateConfirmedReservations } from "../reservations/valiations/validations";
+import { validateConfirmedReservations } from "../reservations/validations/validations";
 import { StartRide } from "../../types";
 import { handleValidationError } from "../../exeptions/handleValidationError";
+import { RideStatus } from "../../utils/constants";
 
 export async function startRide(
   request: FastifyRequest<{ Params: StartRide }>,
@@ -21,7 +22,7 @@ export async function startRide(
     await validateDriver(driver_id);
     const ride = await getRideById(rideId);
     await validateRideOwnership(ride, driver_id!);
-    await validateRideStatus(ride, "SCHEDULED");
+    await validateRideStatus(ride, RideStatus.SCHEDULED);
     await validateConfirmedReservations(rideId);
 
     const updatedRide = await models.ride.update({

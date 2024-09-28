@@ -9,6 +9,7 @@ import {
   validateRideOwnership,
   validateRideStatus,
 } from "./validations/validations";
+import { RideStatus } from "../../utils/constants";
 
 export async function cancelRide(
   request: FastifyRequest<{
@@ -27,12 +28,12 @@ export async function cancelRide(
     await validateDriver(driver_id);
     const ride = await getRideById(rideId);
     await validateRideOwnership(ride, driver_id);
-    await validateRideStatus(ride, "SCHEDULED");
+    await validateRideStatus(ride, RideStatus.SCHEDULED);
 
     const updatedRide = await models.ride.update({
       where: { ride_id: rideId },
       data: {
-        status: "CANCELLED",
+        status: RideStatus.CANCELLED,
       },
     });
 

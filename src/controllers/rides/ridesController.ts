@@ -1,10 +1,5 @@
 import { FastifyPluginAsync } from "fastify";
-import {
-  // cancelRideSchema,
-  // createRideSchema,
-  // getRideByIdSchema,
-  paginationSchema,
-} from "../../utils/schemas";
+import { paginationSchema } from "../../utils/schemas";
 import { createRide } from "../../models/rides/createRide";
 import { updateRide } from "../../models/rides/updateRide";
 import { getRideById, getRidesByDriver } from "../../models/rides/getRides";

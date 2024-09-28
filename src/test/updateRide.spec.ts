@@ -8,7 +8,7 @@ let server: FastifyInstance;
 let userToken: string;
 let userId: string;
 let vehicleId: string;
-let rideId: string;
+let ride_id: string;
 let startAddressId: string;
 let endAddressId: string;
 
@@ -16,7 +16,6 @@ beforeAll(async () => {
   await app.ready();
   server = app;
 
-  // Criar usuário
   const user = await models.user.create({
     data: {
       name: "João",
@@ -37,9 +36,7 @@ beforeAll(async () => {
     id: user.id,
   });
 
-  // Criar veículo
-
-  const randomLicensePlate = `ABC${Math.floor(Math.random() * 10000)
+  const randomlicense_plate = `ABC${Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, "0")}`;
 
@@ -49,16 +46,14 @@ beforeAll(async () => {
       brand: "Fiat",
       model: "Uno",
       year: 2010,
-      license_plate: randomLicensePlate,
+      license_plate: randomlicense_plate,
       color: "Branco",
       seats: 4,
-      document: "documento_veiculo.pdf",
     },
   });
 
   vehicleId = vehicle.vehicle_id;
 
-  // Criar endereços
   const startAddress = await models.address.create({
     data: {
       latitude: -18.2494,
@@ -81,7 +76,6 @@ beforeAll(async () => {
 
   endAddressId = endAddress.id;
 
-  // Criar uma corrida
   const ride = await models.ride.create({
     data: {
       driver_id: userId,
@@ -96,11 +90,10 @@ beforeAll(async () => {
     },
   });
 
-  rideId = ride.ride_id;
+  ride_id = ride.ride_id;
 });
 
 afterAll(async () => {
-  // Limpar todos os dados criados
   await models.ride.deleteMany({
     where: {
       driver_id: userId,
@@ -137,7 +130,7 @@ test("Deve atualizar uma corrida com sucesso", async () => {
       Authorization: `Bearer ${userToken}`,
     },
     payload: {
-      ride_id: rideId,
+      ride_id: ride_id,
       price: 60.0,
       available_seats: 2,
       preferences: "Ar condicionado ligado",
@@ -159,7 +152,7 @@ test("Deve atualizar o endereço de destino da corrida", async () => {
       Authorization: `Bearer ${userToken}`,
     },
     payload: {
-      ride_id: rideId,
+      ride_id: ride_id,
       end_latitude: -17.8571,
       end_longitude: -41.5064,
     },
@@ -178,7 +171,7 @@ test("Não deve atualizar uma corrida com data no passado", async () => {
       Authorization: `Bearer ${userToken}`,
     },
     payload: {
-      ride_id: rideId,
+      ride_id: ride_id,
       start_time: dayjs().subtract(1, "hour").toISOString(),
     },
   });
@@ -196,7 +189,7 @@ test("Não deve atualizar uma corrida com endereços muito próximos", async () 
       Authorization: `Bearer ${userToken}`,
     },
     payload: {
-      ride_id: rideId,
+      ride_id: ride_id,
       start_latitude: -18.2494,
       start_longitude: -43.6005,
       end_latitude: -18.2495,
@@ -237,7 +230,7 @@ test("Não deve atualizar uma corrida de outro motorista", async () => {
       Authorization: `Bearer ${otherUserToken}`,
     },
     payload: {
-      ride_id: rideId,
+      ride_id: ride_id,
       price: 70.0,
     },
   });

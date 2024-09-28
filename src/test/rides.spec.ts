@@ -45,7 +45,6 @@ beforeAll(async () => {
       license_plate: "ABC1234",
       color: "Branco",
       seats: 4,
-      document: "documento_veiculo.pdf",
     },
   });
 

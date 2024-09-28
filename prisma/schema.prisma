@@ -104,7 +104,6 @@ model Vehicle {
   license_plate String   @unique @db.VarChar(7)
   color         String   @db.VarChar(30)
   seats         Int
-  document      String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   Owner         User     @relation(fields: [owner_id], references: [id])
@@ -132,22 +131,22 @@ model PasswordResetToken {
   lastEmailSentAt DateTime
 }
 
+enum RideStatus {
+  SCHEDULED   @map("SCHEDULED")
+  IN_PROGRESS @map("IN_PROGRESS")
+  COMPLETED   @map("COMPLETED")
+  CANCELLED   @map("CANCELLED")
+}
+
 enum ReservationStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
+  PENDING   @map("PENDING")
+  CONFIRMED @map("CONFIRMED")
+  CANCELLED @map("CANCELLED")
 }
 
 enum PaymentStatus {
-  PENDING
-  PAID
-  REFUNDED
-  FAILED
-}
-
-enum RideStatus {
-  SCHEDULED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+  PENDING  @map("PENDING")
+  PAID     @map("PAID")
+  REFUNDED @map("REFUNDED")
+  FAILED   @map("FAILED")
 }

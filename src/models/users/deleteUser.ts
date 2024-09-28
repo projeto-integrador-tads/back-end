@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../models";
-import { Prisma } from "@prisma/client";
+import { UserIdSchema } from "../../types";
 
 export const deleteUser = async (
-  request: FastifyRequest<{ Params: { id: string } }>,
+  request: FastifyRequest<{ Params: UserIdSchema }>,
   reply: FastifyReply
 ) => {
   const id = request.userData?.id;
@@ -20,12 +20,6 @@ export const deleteUser = async (
 
     return reply.status(204).send();
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      return reply.status(404).send({ error: "Usuário não encontrado." });
-    }
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 };
