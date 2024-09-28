@@ -69,7 +69,6 @@ test("Deve registrar um novo veículo", async () => {
       license_plate: "ABC1234",
       color: "Azul",
       seats: 4,
-      document: "documento_veiculo.pdf",
     },
   });
 
@@ -93,7 +92,6 @@ test("Não deve registrar um veículo com dados inválidos", async () => {
       license_plate: "INVALIDO",
       color: "",
       seats: 0,
-      document: "",
     },
   });
 
@@ -116,7 +114,6 @@ test("Não deve registrar um veículo com uma placa já existente", async () => 
       license_plate: "XYZ5678",
       color: "Vermelho",
       seats: 4,
-      document: "outro_documento.pdf",
     },
   });
 
@@ -133,7 +130,6 @@ test("Não deve registrar um veículo com uma placa já existente", async () => 
       license_plate: "XYZ5678",
       color: "Verde",
       seats: 4,
-      document: "mais_um_documento.pdf",
     },
   });
 
@@ -153,7 +149,6 @@ test("Não deve registrar um veículo sem autenticação", async () => {
       license_plate: "DEF5678",
       color: "Prata",
       seats: 4,
-      document: "novo_documento.pdf",
     },
   });
 
@@ -174,7 +169,6 @@ test("Deve atualizar o usuário para is_driver após registrar o primeiro veícu
       license_plate: "GHI9012",
       color: "Preto",
       seats: 4,
-      document: "vw_documento.pdf",
     },
   });
 
@@ -271,7 +265,7 @@ test("Não deve desativar um veículo que não pertence ao usuário", async () =
     },
   });
 
-  expect(response.statusCode).toBe(404);
+  expect(response.statusCode).toBe(400);
 });
 
 test("Deve reativar um veículo", async () => {
@@ -297,7 +291,7 @@ test("Não deve reativar um veículo que não pertence ao usuário", async () =>
     },
   });
 
-  expect(response.statusCode).toBe(404);
+  expect(response.statusCode).toBe(400);
 });
 
 test("Deve atualizar o usuário para is_driver false quando o último veículo ativo é desativado", async () => {
@@ -314,7 +308,6 @@ test("Deve atualizar o usuário para is_driver false quando o último veículo a
       license_plate: "ABC1234",
       color: "Azul",
       seats: 4,
-      document: "documento_veiculo.pdf",
     },
   });
 

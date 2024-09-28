@@ -1,11 +1,5 @@
 import { FastifyPluginAsync } from "fastify";
-import {
-  vehicleSchema,
-  deleteVehicleSchema,
-  reactivateVehicleSchema,
-  updateVehicleSchema,
-  paginationSchema,
-} from "../../utils/schemas";
+import { paginationSchema } from "../../utils/schemas";
 import { registerVehicle } from "../../models/vehicles/registerVehicle";
 import { deleteVehicle } from "../../models/vehicles/deleteVehicle";
 import {
@@ -14,6 +8,12 @@ import {
 } from "../../models/vehicles/getVehicles";
 import { reactivateVehicle } from "../../models/vehicles/reactivateVehicle";
 import { updateVehicle } from "../../models/vehicles/updateVehicle";
+import {
+  deleteVehicleSchema,
+  reactivateVehicleSchema,
+  updateVehicleSchema,
+  vehicleSchema,
+} from "../../models/vehicles/validation/schemas";
 
 export const vehicleController: FastifyPluginAsync = async (app) => {
   app.post(

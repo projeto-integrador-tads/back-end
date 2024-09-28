@@ -10,13 +10,12 @@ let driverToken: string;
 let userId: string;
 let driverId: string;
 let vehicleId: string;
-let rideId: string;
+let ride_id: string;
 
 beforeAll(async () => {
   await app.ready();
   server = app;
 
-  // Register a passenger user
   const userResponse = await server.inject({
     method: "POST",
     url: "/register",
@@ -30,7 +29,6 @@ beforeAll(async () => {
   });
   userId = JSON.parse(userResponse.body).id;
 
-  // Register a driver user
   const driverResponse = await server.inject({
     method: "POST",
     url: "/register",
@@ -44,7 +42,6 @@ beforeAll(async () => {
   });
   driverId = JSON.parse(driverResponse.body).id;
 
-  // Login as passenger
   const userLoginResponse = await server.inject({
     method: "POST",
     url: "/login",
@@ -55,7 +52,6 @@ beforeAll(async () => {
   });
   userToken = JSON.parse(userLoginResponse.body).token;
 
-  // Login as driver
   const driverLoginResponse = await server.inject({
     method: "POST",
     url: "/login",
@@ -66,7 +62,6 @@ beforeAll(async () => {
   });
   driverToken = JSON.parse(driverLoginResponse.body).token;
 
-  // Create vehicle for the driver
   const vehicleResponse = await server.inject({
     method: "POST",
     url: "/vehicles",
@@ -80,12 +75,10 @@ beforeAll(async () => {
       license_plate: "ABC1234",
       color: "Branco",
       seats: 4,
-      document: "documento_veiculo.pdf",
     },
   });
   vehicleId = JSON.parse(vehicleResponse.body).vehicle_id;
 
-  // Create a ride
   const rideResponse = await server.inject({
     method: "POST",
     url: "/rides",
@@ -104,11 +97,10 @@ beforeAll(async () => {
       preferences: "Sem fumantes, por favor",
     },
   });
-  rideId = JSON.parse(rideResponse.body).ride_id;
+  ride_id = JSON.parse(rideResponse.body).ride_id;
 });
 
 afterAll(async () => {
-  // Clean up all created data
   await models.reservation.deleteMany({
     where: {
       OR: [{ passenger_id: userId }, { Ride: { driver_id: driverId } }],
@@ -151,7 +143,7 @@ test("Deve listar as corridas do motorista", async () => {
   const body = JSON.parse(response.body);
   expect(body.data).toBeInstanceOf(Array);
   expect(body.data.length).toBeGreaterThan(0);
-  expect(body.data[0]).toHaveProperty("ride_id", rideId);
+  expect(body.data[0]).toHaveProperty("ride_id", ride_id);
 });
 
 test("Deve listar as corridas por cidade de partida", async () => {
@@ -189,7 +181,7 @@ test("Deve listar as corridas por cidade de destino", async () => {
 test("Deve obter os detalhes de uma corrida específica", async () => {
   const response = await server.inject({
     method: "GET",
-    url: `/rides/${rideId}`,
+    url: `/rides/${ride_id}`,
     headers: {
       Authorization: `Bearer ${driverToken}`,
     },
@@ -197,7 +189,7 @@ test("Deve obter os detalhes de uma corrida específica", async () => {
 
   expect(response.statusCode).toBe(200);
   const body = JSON.parse(response.body);
-  expect(body).toHaveProperty("ride_id", rideId);
+  expect(body).toHaveProperty("ride_id", ride_id);
   expect(body).toHaveProperty("StartAddress");
   expect(body).toHaveProperty("EndAddress");
 });
