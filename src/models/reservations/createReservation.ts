@@ -1,7 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../../models/models";
-import { createReservationSchema } from "../../utils/schemas";
-import { z } from "zod";
 import { ValidationError } from "../../exeptions/validationError";
 import {
   getRideById,
@@ -11,38 +9,42 @@ import {
 import {
   validateDriverPassenger,
   validateExistingReservation,
-} from "./valiations/validations";
+} from "./validations/validations";
 import { getUser } from "../users/validations/validations";
 import { handleValidationError } from "../../exeptions/handleValidationError";
+import { CreateReservationInput } from "../../types";
+import {
+  PaymentStatus,
+  ReservationStatus,
+  RideStatus,
+} from "../../utils/constants";
 
-type CreateReservationInput = z.infer<typeof createReservationSchema>;
-
-export const createReservation = async (
+export async function createReservation(
   request: FastifyRequest<{ Params: CreateReservationInput }>,
   reply: FastifyReply
-) => {
+) {
   try {
-    const { rideId } = request.params;
-    const passenger_id = request.userData?.id;
+    const { ride_id: rideId } = request.params;
+    const passengerId = request.userData?.id;
 
-    if (!passenger_id) {
+    if (!passengerId) {
       throw new ValidationError("O usuário não está logado.");
     }
 
-    await getUser(passenger_id);
+    await getUser(passengerId);
     const ride = await getRideById(rideId);
 
-    await validateRideStatus(ride, "SCHEDULED");
+    await validateRideStatus(ride, RideStatus.SCHEDULED);
     await validateAvailableSeats(ride);
-    await validateDriverPassenger(ride, passenger_id);
-    await validateExistingReservation(rideId, passenger_id);
+    await validateDriverPassenger(ride, passengerId);
+    await validateExistingReservation(rideId, passengerId);
 
     const newReservation = await models.reservation.create({
       data: {
         ride_id: rideId,
-        passenger_id,
-        status: "PENDING",
-        payment_status: "PENDING",
+        passenger_id: passengerId,
+        status: ReservationStatus.PENDING,
+        payment_status: PaymentStatus.PENDING,
       },
     });
 
@@ -58,4 +60,4 @@ export const createReservation = async (
     handleValidationError(error, reply);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
-};
+}

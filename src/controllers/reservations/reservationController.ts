@@ -1,18 +1,18 @@
 import { FastifyInstance } from "fastify";
-import {
-  createReservationSchema,
-  paginationSchema,
-  reservationIdSchema,
-} from "../../utils/schemas";
+import { paginationSchema } from "../../utils/schemas";
 import { createReservation } from "../../models/reservations/createReservation";
 import { cancelReservation } from "../../models/reservations/cancelReservation";
 import { getReservationsByUserId } from "../../models/reservations/getReservationByUser";
 import { getAllReservationsByRideId } from "../../models/reservations/getReservationsByRide";
 import { getConfirmedReservationsByRideId } from "../../models/reservations/getConfirmedReservationsByRideId";
+import {
+  createReservationSchema,
+  reservationIdSchema,
+} from "../../models/reservations/validations/schemas";
 
 export async function reservationController(app: FastifyInstance) {
   app.post(
-    "/reservations/:rideId",
+    "/reservations/:ride_id",
     {
       schema: {
         params: createReservationSchema,
@@ -31,10 +31,10 @@ export async function reservationController(app: FastifyInstance) {
     getReservationsByUserId
   );
 
-  app.get("/reservations/rides/:rideId", getAllReservationsByRideId);
+  app.get("/reservations/rides/:ride_id", getAllReservationsByRideId);
 
   app.get(
-    "/reservations/rides/:rideId/confirmed",
+    "/reservations/rides/:ride_id/confirmed",
     {
       schema: {
         querystring: paginationSchema,

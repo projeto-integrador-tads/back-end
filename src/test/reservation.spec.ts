@@ -17,7 +17,6 @@ beforeAll(async () => {
   await app.ready();
   server = app;
 
-  // Create passenger user
   const userResponse = await server.inject({
     method: "POST",
     url: "/register",
@@ -31,7 +30,6 @@ beforeAll(async () => {
   });
   userId = JSON.parse(userResponse.body).id;
 
-  // Create driver user
   const driverResponse = await server.inject({
     method: "POST",
     url: "/register",
@@ -45,7 +43,6 @@ beforeAll(async () => {
   });
   driverId = JSON.parse(driverResponse.body).id;
 
-  // Login as passenger
   const userLoginResponse = await server.inject({
     method: "POST",
     url: "/login",
@@ -56,7 +53,6 @@ beforeAll(async () => {
   });
   userToken = JSON.parse(userLoginResponse.body).token;
 
-  // Login as driver
   const driverLoginResponse = await server.inject({
     method: "POST",
     url: "/login",
@@ -67,7 +63,6 @@ beforeAll(async () => {
   });
   driverToken = JSON.parse(driverLoginResponse.body).token;
 
-  // Create vehicle for driver
   const vehicleResponse = await server.inject({
     method: "POST",
     url: "/vehicles",
@@ -86,7 +81,6 @@ beforeAll(async () => {
   });
   vehicleId = JSON.parse(vehicleResponse.body).vehicle_id;
 
-  // Create a ride
   const rideResponse = await server.inject({
     method: "POST",
     url: "/rides",
@@ -220,7 +214,6 @@ test("Deve cancelar uma reserva", async () => {
 });
 
 test("Não deve cancelar uma reserva de outro usuário", async () => {
-  // Create a new reservation
   const createResponse = await server.inject({
     method: "POST",
     url: `/reservations/${rideId}`,
@@ -231,7 +224,6 @@ test("Não deve cancelar uma reserva de outro usuário", async () => {
   expect(createResponse.statusCode).toBe(201);
   const newReservationId = JSON.parse(createResponse.body).reservation_id;
 
-  // Try to cancel the reservation with another user
   const response = await server.inject({
     method: "POST",
     url: `/reservations/cancel/${newReservationId}`,

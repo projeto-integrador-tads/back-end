@@ -1,12 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
 import { paginate } from "../../utils/paginate";
-import { Reservation } from "@prisma/client";
+import { Reservation, ReservationStatus } from "@prisma/client";
 import { sanitizeReservation } from "../../utils/sanitize";
-import { paginationSchema } from "../../utils/schemas";
-import { z } from "zod";
-
-type getConfirmedReservationsByRideIdInput = z.infer<typeof paginationSchema>;
+import { getConfirmedReservationsByRideIdInput } from "../../types";
 
 export async function getConfirmedReservationsByRideId(
   request: FastifyRequest<{
@@ -22,7 +19,7 @@ export async function getConfirmedReservationsByRideId(
     const paginatedReservations = await paginate<Reservation, "reservation">(
       models.reservation,
       {
-        where: { ride_id: rideId, status: "CONFIRMED" },
+        where: { ride_id: rideId, status: ReservationStatus.CONFIRMED },
         orderBy: { createdAt: "desc" },
       },
       page,

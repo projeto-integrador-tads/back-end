@@ -6,32 +6,32 @@ import {
   getRideById,
   validateRideOwnership,
 } from "../rides/validations/validations";
-import { paginationSchema } from "../../utils/schemas";
-import { z } from "zod";
 import { Reservation } from "@prisma/client";
 import { sanitizeReservation } from "../../utils/sanitize";
 import { paginate } from "../../utils/paginate";
-
-type GetAllReservationsByRideInput = z.infer<typeof paginationSchema>;
+import {
+  GetAllReservationsByRideInput,
+  GetConfirmedReservationsByRideIdParams,
+} from "../../types";
 
 export async function getAllReservationsByRideId(
   request: FastifyRequest<{
-    Params: { rideId: string };
+    Params: GetConfirmedReservationsByRideIdParams;
     Querystring: GetAllReservationsByRideInput;
   }>,
   reply: FastifyReply
 ) {
-  const { rideId } = request.params;
+  const { ride_id: rideId } = request.params;
   const { page = 1, perPage = 10 } = request.query;
-  const driver_id = request.userData?.id;
+  const driverId = request.userData?.id;
 
-  if (!driver_id) {
+  if (!driverId) {
     return reply.status(401).send({ error: "Usuário não autenticado." });
   }
 
   try {
     const ride = await getRideById(rideId);
-    await validateRideOwnership(ride, driver_id);
+    await validateRideOwnership(ride, driverId);
 
     const reservations = await paginate<Reservation, "reservation">(
       models.reservation,

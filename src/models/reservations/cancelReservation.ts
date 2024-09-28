@@ -4,14 +4,19 @@ import { ValidationError } from "../../exeptions/validationError";
 import { handleValidationError } from "../../exeptions/handleValidationError";
 import { getUser } from "../users/validations/validations";
 import { getRideById } from "../rides/validations/validations";
-import { getReservation, getReservationStatus } from "./valiations/validations";
+import {
+  getReservation,
+  getReservationStatus,
+} from "./validations/validations";
+import { CancelReservationInput } from "../../types";
+import { ReservationStatus } from "@prisma/client";
 
-export const cancelReservation = async (
-  request: FastifyRequest<{ Params: { reservation_id: string } }>,
+export async function cancelReservation(
+  request: FastifyRequest<{ Params: CancelReservationInput }>,
   reply: FastifyReply
-) => {
+) {
   try {
-    const { reservation_id } = request.params;
+    const { reservation_id: reservationId } = request.params;
     const passenger_id = request.userData?.id;
 
     if (!passenger_id) {
@@ -19,7 +24,7 @@ export const cancelReservation = async (
     }
 
     await getUser(passenger_id);
-    const reservation = await getReservation(reservation_id);
+    const reservation = await getReservation(reservationId);
     getReservationStatus(reservation);
 
     if (reservation.passenger_id !== passenger_id) {
@@ -29,8 +34,8 @@ export const cancelReservation = async (
     }
 
     const updatedReservation = await models.reservation.update({
-      where: { reservation_id },
-      data: { status: "CANCELLED" },
+      where: { reservation_id: reservationId },
+      data: { status: ReservationStatus.CANCELLED },
     });
 
     const ride = await getRideById(reservation.ride_id);
@@ -49,4 +54,4 @@ export const cancelReservation = async (
     handleValidationError(error, reply);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
-};
+}
