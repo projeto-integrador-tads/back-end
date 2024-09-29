@@ -7,8 +7,26 @@ import {
   searchRideByCitySchema,
   updateRideSchema,
 } from "../models/rides/validations/schemas";
-import { z } from "zod";
+import { TypeOf, z } from "zod";
 import { paginationSchema } from "../utils/schemas";
+import {
+  deleteVehicleSchema,
+  reactivateVehicleSchema,
+  updateVehicleSchema,
+  vehicleSchema,
+} from "../models/vehicles/validation/schemas";
+import {
+  updateUserSchema,
+  userIdSchema,
+  userSchema,
+} from "../models/users/validations/schema";
+import {
+  cancelReservationSchema,
+  confirmReservationSchema,
+  createReservationSchema,
+  reservationIdSchema,
+} from "../models/reservations/validations/schemas";
+import { Prisma } from "@prisma/client";
 
 interface JwtPayload {
   email: string;
@@ -35,10 +53,43 @@ declare module "fastify" {
   }
 }
 
+type NewRideType = Prisma.RideGetPayload<{
+  include: {
+    StartAddress: true;
+    EndAddress: true;
+    Driver: {
+      select: {
+        name: true;
+        last_name: true;
+        email: true;
+      };
+    };
+  };
+}>;
+
 type CancelRideInput = z.infer<typeof rideIdSchema>;
 type SearchRide = z.infer<typeof rideIdSchema>;
 type StartRide = z.infer<typeof rideIdSchema>;
 type SearchRideByCity = z.infer<typeof searchRideByCitySchema>;
 type CreateRideInput = z.infer<typeof createRideSchema>;
 type UpdateRideInput = z.infer<typeof updateRideSchema>;
+
 type PaginationInput = z.infer<typeof paginationSchema>;
+type getConfirmedReservationsByRideIdInput = z.infer<typeof paginationSchema>;
+type getReservationsByUserInputQueryString = z.infer<typeof paginationSchema>;
+type GetAllReservationsByRideInput = z.infer<typeof paginationSchema>;
+
+type UpdateVehicleInput = z.infer<typeof updateVehicleSchema>;
+type VehicleRequestBody = TypeOf<typeof vehicleSchema>;
+type VehicleIdParams = TypeOf<typeof reactivateVehicleSchema>;
+type DeleteVehicleInput = TypeOf<typeof deleteVehicleSchema>;
+type EndRide = z.infer<typeof rideIdSchema>;
+
+type UserIdSchema = z.infer<typeof userIdSchema>;
+type UserRequestBody = TypeOf<typeof userSchema>;
+type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+type CancelReservationInput = z.infer<typeof cancelReservationSchema>;
+type CreateReservationInput = z.infer<typeof createReservationSchema>;
+type GetConfirmedReservationsByRideIdParams = z.infer<typeof rideIdSchema>;
+type ConfirmReservationInput = z.infer<typeof confirmReservationSchema>;

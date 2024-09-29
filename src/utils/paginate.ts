@@ -19,9 +19,9 @@ export async function paginate<T, K extends PrismaModel>(
   args: any,
   page: number = 1,
   perPage: number = 10,
-  sanitizeCallback?: (item: any) => T
+  sanitizeCallback?: (item: any) => Object
 ): Promise<PaginatedResult<T>> {
-  const skip = (Number(page) - 1) * Number(perPage);
+  const skip = (page - 1) * perPage;
 
   const [total, data] = await Promise.all([
     (model as any).count(args.where ? { where: args.where } : {}),
