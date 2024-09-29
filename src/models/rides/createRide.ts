@@ -10,7 +10,7 @@ import {
   validateDistance,
 } from "./validations/validations";
 import { handleValidationError } from "../../exeptions/handleValidationError";
-import { CreateRideInput } from "../../types";
+import { CreateRideInput, NewRideType } from "../../types";
 import { RideStatus } from "../../utils/constants";
 
 export async function createRide(
@@ -82,7 +82,7 @@ export async function createRide(
 
     await validateDistance(startAddress, endAddress);
 
-    const newRide = await models.ride.create({
+    const newRide: NewRideType = await models.ride.create({
       data: {
         driver_id: userId,
         vehicle_id,
@@ -94,9 +94,20 @@ export async function createRide(
         preferences,
         status: RideStatus.SCHEDULED,
       },
+      include: {
+        StartAddress: true,
+        Driver: {
+          select: {
+            name: true,
+            last_name: true,
+            email: true,
+          },
+        },
+        EndAddress: true,
+      },
     });
 
-    request.server.eventBus.emit("rideCreated", sanitizeRide(newRide));
+    request.server.eventBus.emit("rideCreated", newRide);
 
     return reply.status(201).send(newRide);
   } catch (error) {

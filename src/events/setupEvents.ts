@@ -3,8 +3,8 @@ import { rideEvents } from "./ridesEvents";
 import { accountEvents } from "./accountEvents";
 import { reviewEvents } from "./reviewEvents";
 
-export const setupEvents = (fastify: FastifyInstance) => {
-  rideEvents(fastify);
-  accountEvents(fastify);
-  reviewEvents(fastify);
+export const setupEvents = (app: FastifyInstance) => {
+  rideEvents(app);
+  accountEvents(app);
+  reviewEvents(app);
 };

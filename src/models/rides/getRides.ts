@@ -116,7 +116,7 @@ export async function getRideById(
   }>,
   reply: FastifyReply
 ) {
-  const { rideId } = request.params;
+  const { ride_id: rideId } = request.params;
 
   try {
     const rideWithDetails = await models.ride.findUnique({

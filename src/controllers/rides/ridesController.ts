@@ -14,6 +14,7 @@ import {
   rideIdSchema,
   updateRideSchema,
 } from "../../models/rides/validations/schemas";
+import { endRide } from "../../models/rides/endRide";
 
 export const ridesController: FastifyPluginAsync = async (app) => {
   app.post(
@@ -75,7 +76,7 @@ export const ridesController: FastifyPluginAsync = async (app) => {
   );
 
   app.get(
-    "/rides/:rideId",
+    "/rides/:ride_id",
     {
       schema: {
         params: rideIdSchema,
@@ -85,8 +86,14 @@ export const ridesController: FastifyPluginAsync = async (app) => {
   );
 
   app.post(
-    "/rides/start/:rideId",
+    "/rides/start/:ride_id",
     { schema: { params: rideIdSchema } },
     startRide
+  );
+
+  app.post(
+    "/rides/end/:ride_id",
+    { schema: { params: rideIdSchema } },
+    endRide
   );
 };

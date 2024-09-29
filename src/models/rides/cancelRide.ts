@@ -17,18 +17,18 @@ export async function cancelRide(
   }>,
   reply: FastifyReply
 ) {
-  const { rideId } = request.params;
-  const driver_id = request.userData?.id;
+  const { ride_id: rideId } = request.params;
+  const driverId = request.userData?.id;
 
-  if (!driver_id) {
+  if (!driverId) {
     throw new ValidationError("Usuário não autenticado.");
   }
 
   try {
-    await validateDriver(driver_id);
+    await validateDriver(driverId);
     const ride = await getRideById(rideId);
-    await validateRideOwnership(ride, driver_id);
-    await validateRideStatus(ride, RideStatus.SCHEDULED);
+    await validateRideOwnership(ride, driverId);
+    validateRideStatus(ride, RideStatus.SCHEDULED);
 
     const updatedRide = await models.ride.update({
       where: { ride_id: rideId },

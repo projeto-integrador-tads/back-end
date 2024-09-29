@@ -82,9 +82,9 @@ export async function updateRide(
       data: updateData,
     });
 
-    request.server.eventBus.emit("rideUpdated", sanitizeRide(updatedRide));
+    request.server.eventBus.emit("rideUpdated", updatedRide);
 
-    return reply.status(200).send(updatedRide);
+    return reply.status(200).send(sanitizeRide(updatedRide));
   } catch (error) {
     handleValidationError(error, reply);
     return reply.status(500).send({ error: "Erro interno do servidor." });

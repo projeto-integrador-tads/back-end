@@ -10,24 +10,38 @@ import { validateConfirmedReservations } from "../reservations/validations/valid
 import { StartRide } from "../../types";
 import { handleValidationError } from "../../exeptions/handleValidationError";
 import { RideStatus } from "../../utils/constants";
+import { ValidationError } from "../../exeptions/validationError";
+import { dayjs } from "../../utils/dayjs";
 
 export async function startRide(
   request: FastifyRequest<{ Params: StartRide }>,
   reply: FastifyReply
 ) {
-  const { rideId } = request.params;
-  const driver_id = request.userData?.id;
+  const { ride_id: rideId } = request.params;
+  const driverId = request.userData?.id;
+
+  if (!driverId) {
+    return reply.status(404).send("Usuário não autenticado");
+  }
 
   try {
-    await validateDriver(driver_id);
     const ride = await getRideById(rideId);
-    await validateRideOwnership(ride, driver_id!);
+    await validateRideOwnership(ride, driverId);
     await validateRideStatus(ride, RideStatus.SCHEDULED);
+
+    const now = dayjs();
+    const startTime = dayjs(ride.start_time);
+    if (now.isBefore(startTime)) {
+      throw new ValidationError(
+        "Não é possível iniciar a corrida antes do horário agendado."
+      );
+    }
+
     await validateConfirmedReservations(rideId);
 
     const updatedRide = await models.ride.update({
       where: { ride_id: rideId },
-      data: { status: "IN_PROGRESS" },
+      data: { status: RideStatus.IN_PROGRESS },
     });
 
     request.server.eventBus.emit("rideStarted", updatedRide);
@@ -35,7 +49,6 @@ export async function startRide(
     return reply.status(200).send(updatedRide);
   } catch (error) {
     handleValidationError(error, reply);
-    console.error("Erro ao iniciar a corrida:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

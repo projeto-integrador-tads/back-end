@@ -5,18 +5,25 @@ import { uploadProfilePicture } from "../../models/users/uploadProfilePicture";
 import { getProfilePicture } from "../../models/users/getProfilePicture";
 import { removeProfilePicture } from "../../models/users/removeProfilePicture";
 import { updateUser } from "../../models/users/updateUser";
-import { updateUserSchema } from "../../utils/schemas";
-
-interface GetUserByIdParams {
-  id: string;
-}
+import {
+  updateUserSchema,
+  userIdSchema,
+} from "../../models/users/validations/schema";
 
 export const userController: FastifyPluginAsync = async (
   app: FastifyInstance
 ) => {
-  app.get<{ Params: GetUserByIdParams }>("/users/:id", getUserById);
+  app.get(
+    "/users/:id",
+    {
+      schema: {
+        params: userIdSchema,
+      },
+    },
+    getUserById
+  );
 
-  app.delete<{ Params: GetUserByIdParams }>("/users/:id", deleteUser);
+  app.delete("/users", deleteUser);
 
   app.post("/users/upload/img", uploadProfilePicture);
 

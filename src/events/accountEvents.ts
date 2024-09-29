@@ -6,60 +6,92 @@ import {
   sendPasswordResetEmail,
   passwordChangedEmail,
 } from "../services/email/emailService";
+import { ReservationStatus, RideStatus, User } from "@prisma/client";
+import { models } from "../models/models";
 
-export const accountEvents = (fastify: FastifyInstance) => {
-  // Evento de registro de usuário
-  fastify.eventBus.on("userRegistered", async ({ email, name }) => {
+export const accountEvents = (app: FastifyInstance) => {
+  app.eventBus.on("userRegistered", async (user: User) => {
     try {
-      await sendWelcomeEmail(email, name);
+      await sendWelcomeEmail(user.email, user.name);
     } catch (emailError) {
-      fastify.log.error("Failed to send welcome email:", emailError);
+      app.log.error("Failed to send welcome email:", emailError);
     }
   });
 
-  // Evento de ativação de conta
-  fastify.eventBus.on("accountReactivated", async ({ email, name }) => {
+  app.eventBus.on("accountReactivated", async (user: User) => {
     try {
-      await sendAccountReactivationEmail(email, name);
+      await sendAccountReactivationEmail(user.email, user.name);
     } catch (emailError) {
-      fastify.log.error(
+      app.log.error(
         "Falha ao enviar o email de ativação de conta:",
         emailError
       );
     }
   });
 
-  // Evento de desativação de conta
-  fastify.eventBus.on("accountDeactivated", async ({ email, name }) => {
+  app.eventBus.on("accountDeactivated", async (user: User) => {
     try {
-      await sendAccountDeactivationEmail(email, name);
+      await models.reservation.updateMany({
+        where: {
+          passenger_id: user.id,
+          status: { not: ReservationStatus.CANCELLED },
+        },
+        data: { status: ReservationStatus.CANCELLED },
+      });
+
+      if (user.is_driver) {
+        const rides = await models.ride.findMany({
+          where: {
+            driver_id: user.id,
+            status: { in: [RideStatus.SCHEDULED, RideStatus.IN_PROGRESS] },
+          },
+        });
+
+        for (const ride of rides) {
+          await models.ride.update({
+            where: { ride_id: ride.ride_id },
+            data: { status: RideStatus.CANCELLED },
+          });
+
+          await models.reservation.updateMany({
+            where: {
+              ride_id: ride.ride_id,
+              status: { not: ReservationStatus.CANCELLED },
+            },
+            data: { status: ReservationStatus.CANCELLED },
+          });
+
+          app.eventBus.emit("rideCancelled", ride);
+        }
+
+        await models.vehicle.updateMany({
+          where: { owner_id: user.id },
+          data: { active: false },
+        });
+      }
+
+      await sendAccountDeactivationEmail(user.email, user.name);
+    } catch (error) {
+      app.log.error("Erro ao processar a desativação da conta:", error);
+    }
+  });
+
+  app.eventBus.on("forgotPassword", async ({ email, name, resetCode }) => {
+    try {
+      await sendPasswordResetEmail(email, name, resetCode);
     } catch (emailError) {
-      fastify.log.error(
-        "Falha ao enviar o email de desativação de conta:",
+      app.log.error(
+        "Falha ao enviar o email de esquecimento de senha:",
         emailError
       );
     }
   });
 
-  fastify.eventBus.on("forgotPassword", async ({ email, name, resetCode }) => {
+  app.eventBus.on("passwordChanged", async (user: User) => {
     try {
-      await sendPasswordResetEmail(email, name, resetCode);
+      await passwordChangedEmail(user.email, user.name);
     } catch (emailError) {
-      fastify.log.error(
-        "Falha ao enviar o email de esquecimento de senha:",
-        emailError
-      );
+      app.log.error("Falha ao enviar o email de senha alterada:", emailError);
     }
-  })
-
-  fastify.eventBus.on("passwordChanged", async ({ email, name }) => {
-    try {
-      await passwordChangedEmail(email, name);
-    } catch (emailError) {
-      fastify.log.error(
-        "Falha ao enviar o email de senha alterada:",
-        emailError
-      );
-    }
-  })
+  });
 };
