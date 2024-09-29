@@ -1,9 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../models";
 import { sanitizeUser } from "../../utils/sanitize";
+import { UserIdSchema } from "../../types";
 
 export const getUserById = async (
-  request: FastifyRequest<{ Params: { id: string } }>,
+  request: FastifyRequest<{ Params: UserIdSchema }>,
   reply: FastifyReply
 ) => {
   const id = request.params.id;
@@ -16,7 +17,6 @@ export const getUserById = async (
 
     return sanitizeUser(user);
   } catch (error) {
-    console.error(error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 };

@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix-dry-run",
     "test": "dotenv -e .env.test -- vitest",
     "test:migrate": "dotenv -e .env.test -- npx prisma migrate dev",
     "test:reset": "dotenv -e .env.test -- npx prisma migrate reset --force"

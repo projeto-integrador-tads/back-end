@@ -22,7 +22,7 @@ export async function getRideById(ride_id: string) {
   return ride;
 }
 
-export async function validateRideOwnership(ride: any, driver_id: string) {
+export async function validateRideOwnership(ride: Ride, driver_id: string) {
   if (ride.driver_id !== driver_id) {
     throw new ValidationError(
       "Você não tem permissão para atualizar esta corrida."
@@ -81,7 +81,7 @@ export async function validateDistance(startAddress: any, endAddress: any) {
   }
 }
 
-export async function validateRideStatus(ride: any, expectedStatus: string) {
+export function validateRideStatus(ride: Ride, expectedStatus: string) {
   if (ride.status !== expectedStatus) {
     throw new ValidationError(
       `Apenas corridas ${expectedStatus} podem ser processadas.`

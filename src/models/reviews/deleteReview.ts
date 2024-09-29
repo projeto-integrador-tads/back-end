@@ -13,7 +13,6 @@ export async function deleteReview(
   }
 
   try {
-    // Verifica se a avaliação existe
     const existingReview = await models.review.findUnique({
       where: { review_id },
     });
@@ -22,18 +21,19 @@ export async function deleteReview(
       return reply.status(404).send({ error: "Avaliação não encontrada." });
     }
 
-    // Verifica se o avaliador é o mesmo que está tentando deletar
     if (existingReview.reviewer_id !== reviewer_id) {
-      return reply.status(403).send({ error: "Você não tem permissão para deletar esta avaliação." });
+      return reply
+        .status(403)
+        .send({ error: "Você não tem permissão para deletar esta avaliação." });
     }
 
-    // Deleta a avaliação
     await models.review.delete({
       where: { review_id },
     });
 
-    request.server.eventBus.emit("reviewDeleted", { reviewee_id: existingReview.reviewee_id });
-
+    request.server.eventBus.emit("reviewDeleted", {
+      reviewee_id: existingReview.reviewee_id,
+    });
 
     return reply.status(204).send();
   } catch (error) {

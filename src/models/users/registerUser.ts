@@ -2,11 +2,8 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@prisma/client";
 import { models } from "../../models/models";
 import { hashPassword } from "../../services/security/encrypt";
-import { userSchema } from "../../utils/schemas";
-import { TypeOf } from "zod";
 import { sanitizeUser } from "../../utils/sanitize";
-
-type UserRequestBody = TypeOf<typeof userSchema>;
+import { UserRequestBody } from "../../types";
 
 export const registerUser = async (
   request: FastifyRequest<{ Body: UserRequestBody }>,
@@ -27,7 +24,7 @@ export const registerUser = async (
       },
     });
 
-    request.server.eventBus.emit("userRegistered", { email, name });
+    request.server.eventBus.emit("userRegistered", user);
 
     return sanitizeUser(user);
   } catch (error) {

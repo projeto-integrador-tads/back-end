@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { models } from "../models";
-import { generateResetCode } from "../../utils/resetCode";
+import { generateResetCode } from "./resetCode";
 import { forgotPasswordSchema } from "../../utils/schemas";
 import { dayjs } from "../../utils/dayjs";
 
@@ -25,8 +25,16 @@ export async function forgotPassword(
     });
 
     const now = dayjs();
-    if (existingToken && now.diff(existingToken.lastEmailSentAt, 'second') < 60) {
-      return reply.status(429).send({ error: "Por favor, aguarde 60 segundos antes de solicitar um novo código." });
+    if (
+      existingToken &&
+      now.diff(existingToken.lastEmailSentAt, "second") < 60
+    ) {
+      return reply
+        .status(429)
+        .send({
+          error:
+            "Por favor, aguarde 60 segundos antes de solicitar um novo código.",
+        });
     }
 
     const resetCode = generateResetCode();
@@ -49,12 +57,17 @@ export async function forgotPassword(
       },
     });
 
-    request.server.eventBus.emit("forgotPassword", { email, name: user.name, resetCode });
+    request.server.eventBus.emit("forgotPassword", {
+      email,
+      name: user.name,
+      resetCode,
+    });
 
-    return reply.status(200).send({ message: "Código de recuperação de senha enviado com sucesso." });
+    return reply
+      .status(200)
+      .send({ message: "Código de recuperação de senha enviado com sucesso." });
   } catch (error) {
     console.error(error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }
-

@@ -21,7 +21,6 @@ export async function updateReview(
   }
 
   try {
-    // Verifica se a avaliação existe
     const existingReview = await models.review.findUnique({
       where: { review_id },
     });
@@ -30,12 +29,14 @@ export async function updateReview(
       return reply.status(404).send({ error: "Avaliação não encontrada." });
     }
 
-    // Verifica se o avaliador é o mesmo que está tentando atualizar
     if (existingReview.reviewer_id !== reviewer_id) {
-      return reply.status(403).send({ error: "Você não tem permissão para atualizar esta avaliação." });
+      return reply
+        .status(403)
+        .send({
+          error: "Você não tem permissão para atualizar esta avaliação.",
+        });
     }
 
-    // Atualiza a avaliação
     const updatedReview = await models.review.update({
       where: { review_id },
       data: {
@@ -44,7 +45,9 @@ export async function updateReview(
       },
     });
 
-    request.server.eventBus.emit("reviewUpdated", { reviewee_id: existingReview.reviewee_id });
+    request.server.eventBus.emit("reviewUpdated", {
+      reviewee_id: existingReview.reviewee_id,
+    });
 
     return reply.status(200).send(updatedReview);
   } catch (error) {

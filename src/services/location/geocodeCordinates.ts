@@ -29,9 +29,13 @@ export async function geocodeCoordinates(
         }
       }
 
+      const formattedAddress = result.formatted_address
+        .replace(/\b[\w+]+\+\w+\b/g, "")
+        .trim();
+
       return {
         city,
-        formattedAddress: result.formatted_address,
+        formattedAddress,
       };
     }
     console.error(

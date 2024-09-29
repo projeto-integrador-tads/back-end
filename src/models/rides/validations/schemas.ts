@@ -52,7 +52,7 @@ export const updateRideSchema = z.object({
 });
 
 export const rideIdSchema = z.object({
-  rideId: z.string().uuid(),
+  ride_id: z.string().uuid(),
 });
 
 export const searchRideByCitySchema = z.object({

@@ -26,10 +26,7 @@ export default async function loginHandler(
         where: { id: user.id },
         data: { active: true },
       });
-      request.server.eventBus.emit("accountReactivated", {
-        email: user.email,
-        name: user.name,
-      });
+      request.server.eventBus.emit("accountReactivated", user);
     }
     const isMatch = await bcrypt.compare(password, user.password);
 

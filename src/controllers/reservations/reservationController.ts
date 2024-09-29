@@ -6,9 +6,11 @@ import { getReservationsByUserId } from "../../models/reservations/getReservatio
 import { getAllReservationsByRideId } from "../../models/reservations/getReservationsByRide";
 import { getConfirmedReservationsByRideId } from "../../models/reservations/getConfirmedReservationsByRideId";
 import {
+  confirmReservationSchema,
   createReservationSchema,
   reservationIdSchema,
 } from "../../models/reservations/validations/schemas";
+import { confirmReservation } from "../../models/reservations/confirmReservation";
 
 export async function reservationController(app: FastifyInstance) {
   app.post(
@@ -45,4 +47,14 @@ export async function reservationController(app: FastifyInstance) {
   );
 
   app.post("/reservations/cancel/:reservation_id", cancelReservation);
+
+  app.post(
+    "/reservations/confirm/:reservation_id",
+    {
+      schema: {
+        params: confirmReservationSchema,
+      },
+    },
+    confirmReservation
+  );
 }

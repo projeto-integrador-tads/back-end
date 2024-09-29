@@ -1,10 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 import { models } from "../models";
-import { updateUserSchema } from "../../utils/schemas";
 import { sanitizeUser } from "../../utils/sanitize";
-
-type UpdateUserInput = z.infer<typeof updateUserSchema>;
+import { UpdateUserInput } from "../../types";
 
 export async function updateUser(
   request: FastifyRequest<{

@@ -22,7 +22,7 @@ export async function verifyResetCode(
 
     if (passwordReset.attempts >= 3) {
       return reply.status(400).send({
-        error: "O número máximo de tentativas foi atingido."
+        error: "O número máximo de tentativas foi atingido.",
       });
     }
 
