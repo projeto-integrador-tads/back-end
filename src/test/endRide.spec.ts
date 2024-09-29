@@ -1,8 +1,9 @@
 import { expect, test, beforeAll, afterAll } from "vitest";
 import { FastifyInstance } from "fastify";
-import { models } from "../models/models";
 import app from "../config/app";
 import { dayjs } from "../utils/dayjs";
+import { models } from "../models/models";
+import { RideStatus, ReservationStatus } from "../utils/constants";
 
 let server: FastifyInstance;
 let userToken: string;
@@ -70,11 +71,11 @@ beforeAll(async () => {
       Authorization: `Bearer ${driverToken}`,
     },
     payload: {
-      brand: "Toyota",
-      model: "Corolla",
-      year: 2022,
+      brand: "Fiat",
+      model: "Uno",
+      year: 2010,
       license_plate: "ABC1234",
-      color: "Preto",
+      color: "Branco",
       seats: 4,
     },
   });
@@ -88,17 +89,42 @@ beforeAll(async () => {
     },
     payload: {
       vehicle_id: vehicleId,
-      start_latitude: -18.2494,
-      start_longitude: -43.6005,
-      end_latitude: -16.8674,
-      end_longitude: -42.0706,
-      start_time: dayjs().add(24, "hour").toISOString(),
-      price: 50.0,
+      start_latitude: -16.5089,
+      start_longitude: -41.7869,
+      end_latitude: -18.2494,
+      end_longitude: -43.6005,
+      start_time: dayjs().toISOString(),
+      price: 150.0,
       available_seats: 3,
       preferences: "Sem fumantes, por favor",
     },
   });
   rideId = JSON.parse(rideResponse.body).ride_id;
+
+  const reservationResponse = await server.inject({
+    method: "POST",
+    url: `/reservations/${rideId}`,
+    headers: {
+      Authorization: `Bearer ${userToken}`,
+    },
+  });
+  reservationId = JSON.parse(reservationResponse.body).reservation_id;
+
+  await server.inject({
+    method: "POST",
+    url: `/reservations/confirm/${reservationId}`,
+    headers: {
+      Authorization: `Bearer ${userToken}`,
+    },
+  });
+
+  await server.inject({
+    method: "POST",
+    url: `/rides/start/${rideId}`,
+    headers: {
+      Authorization: `Bearer ${driverToken}`,
+    },
+  });
 });
 
 afterAll(async () => {
@@ -109,123 +135,75 @@ afterAll(async () => {
   await server.close();
 });
 
-test("Deve criar uma nova reserva", async () => {
+test("Deve finalizar uma corrida com sucesso", async () => {
   const response = await server.inject({
     method: "POST",
-    url: `/reservations/${rideId}`,
+    url: `/rides/end/${rideId}`,
     headers: {
-      Authorization: `Bearer ${userToken}`,
+      Authorization: `Bearer ${driverToken}`,
     },
   });
 
-  expect(response.statusCode).toBe(201);
+  expect(response.statusCode).toBe(200);
   const body = JSON.parse(response.body);
-  expect(body).toHaveProperty("reservation_id");
-  reservationId = body.reservation_id;
+  expect(body.status).toBe(RideStatus.COMPLETED);
 });
 
-test("Não deve criar uma reserva para uma corrida inexistente", async () => {
+test("Não deve finalizar uma corrida que não está em andamento", async () => {
+  const newRideResponse = await server.inject({
+    method: "POST",
+    url: "/rides",
+    headers: {
+      Authorization: `Bearer ${driverToken}`,
+    },
+    payload: {
+      vehicle_id: vehicleId,
+      start_latitude: -16.8674,
+      start_longitude: -42.0706,
+      end_latitude: -17.8571,
+      end_longitude: -41.5064,
+      start_time: dayjs().add(2, "hour").toISOString(),
+      price: 100.0,
+      available_seats: 3,
+      preferences: "Sem animais, por favor",
+    },
+  });
+  const newRideId = JSON.parse(newRideResponse.body).ride_id;
+
   const response = await server.inject({
     method: "POST",
-    url: `/reservations/${crypto.randomUUID()}`,
+    url: `/rides/end/${newRideId}`,
     headers: {
-      Authorization: `Bearer ${userToken}`,
+      Authorization: `Bearer ${driverToken}`,
     },
   });
 
   expect(response.statusCode).toBe(400);
   const body = JSON.parse(response.body);
-  expect(body.error).toBe("Corrida não encontrada.");
+  expect(body.error).toBe("Apenas corridas IN_PROGRESS podem ser processadas.");
 });
 
-test("Não deve criar uma reserva se o usuário for o motorista da corrida", async () => {
+test("Não deve finalizar uma corrida que não pertence ao motorista", async () => {
   const response = await server.inject({
     method: "POST",
-    url: `/reservations/${rideId}`,
+    url: `/rides/end/${rideId}`,
     headers: {
-      Authorization: `Bearer ${driverToken}`,
+      Authorization: `Bearer ${userToken}`,
     },
   });
 
   expect(response.statusCode).toBe(400);
   const body = JSON.parse(response.body);
   expect(body.error).toBe(
-    "Não é possível pegar carona em uma corrida criada por você."
+    "Você não tem permissão para atualizar esta corrida."
   );
 });
 
-test("Deve listar as reservas do usuário", async () => {
-  const response = await server.inject({
-    method: "GET",
-    url: "/reservations/users",
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-    },
-  });
-
-  expect(response.statusCode).toBe(200);
-  const body = JSON.parse(response.body);
-  expect(body.data).toBeInstanceOf(Array);
-  expect(body.data.length).toBeGreaterThan(0);
-});
-
-test("Deve listar as reservas de uma corrida específica", async () => {
-  const response = await server.inject({
-    method: "GET",
-    url: `/reservations/rides/${rideId}`,
-    headers: {
-      Authorization: `Bearer ${driverToken}`,
-    },
-  });
-
-  expect(response.statusCode).toBe(200);
-  const body = JSON.parse(response.body);
-  expect(body.data).toBeInstanceOf(Array);
-  expect(body.data.length).toBeGreaterThan(0);
-});
-
-test("Deve listar as reservas confirmadas de uma corrida", async () => {
-  const response = await server.inject({
-    method: "GET",
-    url: `/reservations/rides/${rideId}/confirmed`,
-    headers: {
-      Authorization: `Bearer ${driverToken}`,
-    },
-  });
-
-  expect(response.statusCode).toBe(200);
-  const body = JSON.parse(response.body);
-  expect(body.data).toBeInstanceOf(Array);
-});
-
-test("Deve cancelar uma reserva", async () => {
+test("Não deve finalizar uma corrida inexistente", async () => {
+  const fakeRideId = "00000000-0000-0000-0000-000000000000";
   const response = await server.inject({
     method: "POST",
-    url: `/reservations/cancel/${reservationId}`,
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-    },
-  });
-
-  expect(response.statusCode).toBe(200);
-  const body = JSON.parse(response.body);
-  expect(body.message).toBe("Reserva cancelada com sucesso.");
-});
-
-test("Não deve cancelar uma reserva de outro usuário", async () => {
-  const createResponse = await server.inject({
-    method: "POST",
-    url: `/reservations/${rideId}`,
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-    },
-  });
-  expect(createResponse.statusCode).toBe(201);
-  const newReservationId = JSON.parse(createResponse.body).reservation_id;
-
-  const response = await server.inject({
-    method: "POST",
-    url: `/reservations/cancel/${newReservationId}`,
+    url: `/rides/end/${fakeRideId}`,
     headers: {
       Authorization: `Bearer ${driverToken}`,
     },
@@ -233,5 +211,5 @@ test("Não deve cancelar uma reserva de outro usuário", async () => {
 
   expect(response.statusCode).toBe(400);
   const body = JSON.parse(response.body);
-  expect(body.error).toBe("Você não tem permissão para cancelar esta reserva.");
+  expect(body.error).toBe("Corrida não encontrada.");
 });

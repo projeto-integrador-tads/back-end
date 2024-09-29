@@ -84,7 +84,7 @@ test("Deve obter os dados do usuário", async () => {
 test("Deve desativar a conta do usuário", async () => {
   const response = await server.inject({
     method: "DELETE",
-    url: `/users/${userId}`,
+    url: `/users`,
     headers: {
       Authorization: `Bearer ${userToken}`,
     },

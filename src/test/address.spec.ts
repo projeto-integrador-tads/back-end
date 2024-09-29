@@ -57,7 +57,6 @@ beforeAll(async () => {
       license_plate: "ABC1234",
       color: "Azul",
       seats: 4,
-      document: "documento_veiculo.pdf",
     },
   });
 });
