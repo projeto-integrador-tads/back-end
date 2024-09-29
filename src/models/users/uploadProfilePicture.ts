@@ -4,23 +4,24 @@ import { env } from "process";
 import { models } from "../models";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { s3 } from "../../services/aws/s3";
+import { handleImageResizeError } from "../../exeptions/handleResizeError";
 
 export async function uploadProfilePicture(
-  req: FastifyRequest,
-  res: FastifyReply
+  request: FastifyRequest,
+  reply: FastifyReply
 ) {
-  const id = req.userData?.id;
+  const id = request.userData?.id;
 
   try {
-    const data = await req.file({ limits: { fileSize: 5242880 } });
+    const data = await request.file({ limits: { fileSize: 5242880 } });
 
     if (!data) {
-      return res.status(400).send({ error: "Nenhum arquivo foi enviado." });
+      return reply.status(400).send({ error: "Nenhum arquivo foi enviado." });
     }
 
     const allowedMimeTypes = ["image/jpeg", "image/png"];
     if (!allowedMimeTypes.includes(data.mimetype)) {
-      return res.status(400).send({
+      return reply.status(400).send({
         error:
           "Tipo de arquivo não suportado. Por favor, envie uma imagem JPG ou PNG",
       });
@@ -56,11 +57,12 @@ export async function uploadProfilePicture(
       where: { id: id },
     });
 
-    return res
+    return reply
       .status(200)
       .send({ message: "Foto de perfil atualizada com sucesso!" });
   } catch (error) {
-    return res.status(500).send({
+    handleImageResizeError(error, reply);
+    return reply.status(500).send({
       error:
         "Ocorreu um erro interno no servidor. Por favor, tente novamente mais tarde.",
     });

@@ -1,8 +1,10 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
+import { eventTypes } from "../../utils/constants";
+import { DeleteReviewParams } from "../../types";
 
 export async function deleteReview(
-  request: FastifyRequest<{ Params: { review_id: string } }>,
+  request: FastifyRequest<{ Params: DeleteReviewParams }>,
   reply: FastifyReply
 ) {
   const { review_id } = request.params;
@@ -31,13 +33,12 @@ export async function deleteReview(
       where: { review_id },
     });
 
-    request.server.eventBus.emit("reviewDeleted", {
+    request.server.eventBus.emit(eventTypes.reviewDeleted, {
       reviewee_id: existingReview.reviewee_id,
     });
 
     return reply.status(204).send();
   } catch (error) {
-    console.error("Erro ao deletar a avaliação:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

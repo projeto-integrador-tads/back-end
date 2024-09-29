@@ -1,10 +1,8 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import bcrypt from "bcrypt";
-import { loginSchema } from "../../utils/schemas";
 import { models } from "../models";
-import { z } from "zod";
-
-type LoginRequestBody = z.infer<typeof loginSchema>;
+import { LoginRequestBody } from "../../types";
+import { eventTypes } from "../../utils/constants";
 
 export default async function loginHandler(
   request: FastifyRequest<{ Body: LoginRequestBody }>,
@@ -26,7 +24,7 @@ export default async function loginHandler(
         where: { id: user.id },
         data: { active: true },
       });
-      request.server.eventBus.emit("accountReactivated", user);
+      request.server.eventBus.emit(eventTypes.accountReactivated, user);
     }
     const isMatch = await bcrypt.compare(password, user.password);
 

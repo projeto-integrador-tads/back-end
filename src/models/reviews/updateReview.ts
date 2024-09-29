@@ -1,13 +1,10 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
-import { z } from "zod";
-import { updateReviewSchema } from "../../utils/schemas";
-
-type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
+import { UpdateReviewInput, UpdateReviewParams } from "../../types";
 
 export async function updateReview(
   request: FastifyRequest<{
-    Params: { review_id: string };
+    Params: UpdateReviewParams;
     Body: UpdateReviewInput;
   }>,
   reply: FastifyReply
@@ -30,11 +27,9 @@ export async function updateReview(
     }
 
     if (existingReview.reviewer_id !== reviewer_id) {
-      return reply
-        .status(403)
-        .send({
-          error: "Você não tem permissão para atualizar esta avaliação.",
-        });
+      return reply.status(403).send({
+        error: "Você não tem permissão para atualizar esta avaliação.",
+      });
     }
 
     const updatedReview = await models.review.update({

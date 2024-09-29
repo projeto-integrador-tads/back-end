@@ -68,7 +68,6 @@ export async function listInactiveVehicles(
 
     return reply.status(200).send(paginatedVehicles);
   } catch (error) {
-    console.error("Erro ao listar veículos inativos do proprietário:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

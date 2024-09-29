@@ -1,13 +1,13 @@
 import { FastifyPluginAsync } from "fastify";
-import {
-  addressIdSchema,
-  createAddressSchema,
-  deleteAddressSchema,
-} from "../../utils/schemas";
 import { createAddress } from "../../models/addresses/createAddress";
 import { deleteAddress } from "../../models/addresses/deleteAddress";
 import { getSavedAddresses } from "../../models/addresses/getSavedAddresses";
 import { getAddressById } from "../../models/addresses/getAddressById";
+import {
+  addressIdSchema,
+  createAddressSchema,
+  deleteAddressSchema,
+} from "../../models/addresses/validations/schemas";
 
 export const addressController: FastifyPluginAsync = async (app) => {
   app.post(

@@ -34,7 +34,6 @@ export async function getProfilePicture(
 
     return reply.send({ url: signedUrl });
   } catch (error) {
-    console.error("Erro ao buscar imagem de perfil:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

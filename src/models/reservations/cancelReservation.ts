@@ -10,6 +10,7 @@ import {
 } from "./validations/validations";
 import { CancelReservationInput } from "../../types";
 import { ReservationStatus } from "@prisma/client";
+import { eventTypes } from "../../utils/constants";
 
 export async function cancelReservation(
   request: FastifyRequest<{ Params: CancelReservationInput }>,
@@ -45,7 +46,10 @@ export async function cancelReservation(
       data: { available_seats: ride.available_seats + 1 },
     });
 
-    request.server.eventBus.emit("reservationCancelled", updatedReservation);
+    request.server.eventBus.emit(
+      eventTypes.reservationCancelled,
+      updatedReservation
+    );
 
     return reply
       .status(200)

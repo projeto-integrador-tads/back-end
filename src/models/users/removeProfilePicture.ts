@@ -35,7 +35,6 @@ export async function removeProfilePicture(
       .status(200)
       .send({ message: "Foto de perfil removida com sucesso!" });
   } catch (error) {
-    console.error("Erro ao remover a foto de perfil:", error);
     return res.status(500).send({
       error:
         "Ocorreu um erro interno no servidor. Por favor, tente novamente mais tarde.",

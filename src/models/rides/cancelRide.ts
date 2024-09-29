@@ -9,7 +9,7 @@ import {
   validateRideOwnership,
   validateRideStatus,
 } from "./validations/validations";
-import { RideStatus } from "../../utils/constants";
+import { RideStatus, eventTypes } from "../../utils/constants";
 
 export async function cancelRide(
   request: FastifyRequest<{
@@ -37,12 +37,11 @@ export async function cancelRide(
       },
     });
 
-    request.server.eventBus.emit("rideCancelled", updatedRide);
+    request.server.eventBus.emit(eventTypes.rideCancelled, updatedRide);
 
     return reply.status(204).send();
   } catch (error) {
     handleValidationError(error, reply);
-    console.error("Erro ao cancelar a corrida:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

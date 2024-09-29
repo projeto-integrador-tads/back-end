@@ -1,11 +1,15 @@
 import { FastifyPluginAsync } from "fastify";
-import { createReviewSchema, updateReviewSchema } from "../../utils/schemas";
 import { createReview } from "../../models/reviews/createReview";
 import { updateReview } from "../../models/reviews/updateReview";
 import { deleteReview } from "../../models/reviews/deleteReview";
+import {
+  createReviewSchema,
+  reviewIdSchema,
+  updateReviewSchema,
+} from "../../models/reviews/validations/schemas";
 
-export const reviewsController: FastifyPluginAsync = async (fastify) => {
-  fastify.post(
+export const reviewsController: FastifyPluginAsync = async (app) => {
+  app.post(
     "/reviews",
     {
       schema: {
@@ -15,7 +19,7 @@ export const reviewsController: FastifyPluginAsync = async (fastify) => {
     createReview
   );
 
-  fastify.put(
+  app.put(
     "/reviews/:review_id",
     {
       schema: {
@@ -25,8 +29,9 @@ export const reviewsController: FastifyPluginAsync = async (fastify) => {
     updateReview
   );
 
-  fastify.delete(
+  app.delete(
     "/reviews/:review_id",
+    { schema: { params: reviewIdSchema } },
     deleteReview
   );
 };

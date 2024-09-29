@@ -2,7 +2,8 @@ import { FastifyPluginAsync, FastifyRequest } from "fastify";
 import WebSocket from "ws";
 import { sendMessage } from "../../models/messages/sendMessage";
 import { getMessagesByRide } from "../../models/messages/getMessagesByRide";
-import { messageListingParamans, paginationSchema } from "../../utils/schemas";
+import { paginationSchema } from "../../utils/schemas";
+import { messageListingParamans } from "../../models/messages/validations/schemas";
 
 interface WebSocketWithUserData extends WebSocket {
   userData?: { id: string };

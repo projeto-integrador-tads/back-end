@@ -1,14 +1,12 @@
-import { z } from "zod";
-import { resetPasswordSchema } from "../../utils/schemas";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../models";
 import bcrypt from "bcrypt";
-
-type ForgotPasswordRequestBody = z.infer<typeof resetPasswordSchema>;
+import { ResetPasswordRequestBody } from "../../types";
+import { eventTypes } from "../../utils/constants";
 
 export async function resetPassword(
   request: FastifyRequest<{
-    Body: ForgotPasswordRequestBody;
+    Body: ResetPasswordRequestBody;
   }>,
   reply: FastifyReply
 ) {
@@ -36,7 +34,7 @@ export async function resetPassword(
 
     await models.passwordResetToken.delete({ where: { email } });
 
-    request.server.eventBus.emit("passwordChanged", user);
+    request.server.eventBus.emit(eventTypes.passwordChanged, user);
 
     return reply.status(200).send({ message: "Senha alterada com sucesso." });
   } catch (error) {

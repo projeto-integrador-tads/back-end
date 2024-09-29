@@ -18,6 +18,7 @@ import { messageController } from "../controllers/messages/messageController";
 import fastifyMultipart from "@fastify/multipart";
 import { ZodError } from "zod";
 import { addressController } from "../controllers/addresses/addressController";
+import { websocketsController } from "../controllers/socket/sendEvents";
 
 const app = Fastify();
 
@@ -36,6 +37,7 @@ app.register(websocket);
 app.register(eventPlugin);
 app.register(messageController);
 app.register(addressController);
+app.register(websocketsController);
 
 app.setErrorHandler((error, request, reply) => {
   if (error instanceof ZodError) {

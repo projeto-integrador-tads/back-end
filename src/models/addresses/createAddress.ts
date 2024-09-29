@@ -2,11 +2,11 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { models } from "../models";
 import { geocodeCoordinates } from "../../services/location/geocodeCordinates";
-import { createAddressSchema } from "../../utils/schemas";
 import { sanitizeAddress } from "../../utils/sanitize";
+import { CreateAddress } from "../../types";
 
 export const createAddress = async (
-  request: FastifyRequest<{ Body: z.infer<typeof createAddressSchema> }>,
+  request: FastifyRequest<{ Body: CreateAddress }>,
   reply: FastifyReply
 ) => {
   const { latitude, longitude } = request.body;

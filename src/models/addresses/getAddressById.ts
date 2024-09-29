@@ -1,9 +1,10 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
 import { sanitizeAddress } from "../../utils/sanitize";
+import { AddressIdInput } from "../../types";
 
 export const getAddressById = async (
-  request: FastifyRequest<{ Params: { id: string } }>,
+  request: FastifyRequest<{ Params: AddressIdInput }>,
   reply: FastifyReply
 ) => {
   const { id } = request.params;

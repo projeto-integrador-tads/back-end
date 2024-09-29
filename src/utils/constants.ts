@@ -13,9 +13,6 @@ export const ReservationStatus = {
   CANCELLED: "CANCELLED",
 } as const;
 
-export type ReservationStatusType =
-  (typeof ReservationStatus)[keyof typeof ReservationStatus];
-
 export const PaymentStatus = {
   PENDING: "PENDING",
   PAID: "PAID",
@@ -23,12 +20,39 @@ export const PaymentStatus = {
   FAILED: "FAILED",
 } as const;
 
-export type PaymentStatusType =
-  (typeof PaymentStatus)[keyof typeof PaymentStatus];
-
 export const CompanyData = {
   COMPANY_NAME: "VemComigo",
   COMPANY_EMAIL: "vemcomigo@rides.com",
 } as const;
 
-export type CompanyDataType = (typeof CompanyData)[keyof typeof CompanyData];
+export const eventTypes = {
+  rideCreated: "rideCreated",
+  rideUpdated: "rideUpdated",
+  rideCancelled: "rideCancelled",
+  rideStarted: "rideStarted",
+  rideEnded: "rideEnded",
+  reservationCreated: "reservationCreated",
+  reservationConfirmed: "reservationConfirmed",
+  reservationCancelled: "reservationCancelled",
+  messageReceived: "messageReceived",
+  userRegistered: "userRegistered",
+  accountReactivated: "accountReactivated",
+  accountDeactivated: "accountDeactivated",
+  forgotPassword: "forgotPassword",
+  passwordChanged: "passwordChanged",
+  reviewCreated: "reviewCreated",
+  reviewUpdated: "reviewUpdated",
+  reviewDeleted: "reviewDeleted",
+} as const;
+
+export const pushTypes = {
+  rideCreated: "rideCreated",
+  rideUpdated: "rideUpdated",
+  rideCancelled: "rideCancelled",
+  rideStarted: "rideStarted",
+  rideEnded: "rideEnded",
+  reservationCreated: "reservationCreated",
+  reservationConfirmed: "reservationConfirmed",
+  reservationCancelled: "reservationCancelled",
+  messageReceived: "messageReceived",
+} as const;

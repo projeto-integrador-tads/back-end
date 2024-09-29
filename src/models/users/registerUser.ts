@@ -4,6 +4,7 @@ import { models } from "../../models/models";
 import { hashPassword } from "../../services/security/encrypt";
 import { sanitizeUser } from "../../utils/sanitize";
 import { UserRequestBody } from "../../types";
+import { eventTypes } from "../../utils/constants";
 
 export const registerUser = async (
   request: FastifyRequest<{ Body: UserRequestBody }>,
@@ -24,7 +25,7 @@ export const registerUser = async (
       },
     });
 
-    request.server.eventBus.emit("userRegistered", user);
+    request.server.eventBus.emit(eventTypes.userRegistered, user);
 
     return sanitizeUser(user);
   } catch (error) {
@@ -34,7 +35,6 @@ export const registerUser = async (
     ) {
       return reply.status(409).send({ error: "O email já existe." });
     }
-    console.error(error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 };

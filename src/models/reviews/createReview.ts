@@ -1,8 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { createReviewSchema } from "../../utils/schemas";
 import { models } from "../models";
-
-type CreateReviewBody = typeof createReviewSchema._type;
+import {
+  ReservationStatus,
+  RideStatus,
+  eventTypes,
+} from "../../utils/constants";
+import { CreateReviewBody } from "../../types";
 
 export async function createReview(
   request: FastifyRequest<{
@@ -10,16 +13,16 @@ export async function createReview(
   }>,
   reply: FastifyReply
 ) {
-  const { ride_id, rating, comment } = request.body;
-  const reviewer_id = request.userData?.id;
+  const { ride_id: rideId, rating, comment } = request.body;
+  const reviewerId = request.userData?.id;
 
-  if (!reviewer_id) {
+  if (!reviewerId) {
     return reply.status(400).send({ error: "ID do avaliador não encontrado." });
   }
 
   try {
     const ride = await models.ride.findUnique({
-      where: { ride_id },
+      where: { ride_id: rideId },
       include: {
         Reservations: true,
       },
@@ -29,15 +32,15 @@ export async function createReview(
       return reply.status(404).send({ error: "Corrida não encontrada." });
     }
 
-    if (ride.status !== "COMPLETED") {
+    if (ride.status !== RideStatus.COMPLETED) {
       return reply.status(400).send({ error: "A corrida não foi finalizada." });
     }
 
     const reservation = ride.Reservations.find(
-      (reservation) => reservation.passenger_id === reviewer_id
+      (reservation) => reservation.passenger_id === reviewerId
     );
 
-    if (!reservation || reservation.status !== "CONFIRMED") {
+    if (!reservation || reservation.status !== ReservationStatus.CONFIRMED) {
       return reply.status(403).send({
         error:
           "Você não participou desta corrida ou sua reserva não foi confirmada.",
@@ -46,8 +49,8 @@ export async function createReview(
 
     const existingReview = await models.review.findFirst({
       where: {
-        ride_id,
-        reviewer_id,
+        ride_id: rideId,
+        reviewer_id: reviewerId,
       },
     });
 
@@ -57,15 +60,15 @@ export async function createReview(
 
     const review = await models.review.create({
       data: {
-        ride_id,
-        reviewer_id,
+        ride_id: rideId,
+        reviewer_id: reviewerId,
         reviewee_id: ride.driver_id,
         rating,
         comment,
       },
     });
 
-    request.server.eventBus.emit("reviewCreated", {
+    request.server.eventBus.emit(eventTypes.reviewCreated, {
       reviewee_id: ride.driver_id,
     });
 

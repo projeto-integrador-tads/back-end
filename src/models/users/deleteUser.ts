@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../models";
+import { eventTypes } from "../../utils/constants";
 
 export async function deleteUser(request: FastifyRequest, reply: FastifyReply) {
   const id = request.userData?.id;
@@ -23,7 +24,7 @@ export async function deleteUser(request: FastifyRequest, reply: FastifyReply) {
       data: { active: false },
     });
 
-    request.server.eventBus.emit("accountDeactivated", deletedUser);
+    request.server.eventBus.emit(eventTypes.accountDeactivated, deletedUser);
 
     return reply.status(204).send();
   } catch (error) {

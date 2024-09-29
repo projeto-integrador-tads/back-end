@@ -1,16 +1,16 @@
 import { FastifyInstance } from "fastify";
-import {
-  forgotPasswordSchema,
-  loginSchema,
-  resetPasswordSchema,
-  verifyResetCodeSchema,
-} from "../../utils/schemas";
 import loginHandler from "../../models/auth/login";
 import { registerUser } from "../../models/users/registerUser";
 import { forgotPassword } from "../../models/auth/forgotPassword";
 import { verifyResetCode } from "../../models/auth/verifyResetCode";
 import { resetPassword } from "../../models/auth/resetPassword";
 import { userSchema } from "../../models/users/validations/schema";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  resetPasswordSchema,
+  verifyResetCodeSchema,
+} from "../../models/auth/validations/schemas";
 
 export async function authController(app: FastifyInstance) {
   app.post(

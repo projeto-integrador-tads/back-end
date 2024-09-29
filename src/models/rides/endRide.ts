@@ -1,14 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
 import {
-  validateDriver,
   getRideById,
   validateRideOwnership,
   validateRideStatus,
 } from "./validations/validations";
 import { EndRide } from "../../types";
 import { handleValidationError } from "../../exeptions/handleValidationError";
-import { RideStatus } from "../../utils/constants";
+import { RideStatus, eventTypes } from "../../utils/constants";
 import { dayjs } from "../../utils/dayjs";
 
 export async function endRide(
@@ -31,7 +30,7 @@ export async function endRide(
       },
     });
 
-    request.server.eventBus.emit("rideEnded", updatedRide);
+    request.server.eventBus.emit(eventTypes.rideEnded, updatedRide);
 
     return reply.status(200).send(updatedRide);
   } catch (error) {

@@ -17,6 +17,7 @@ import {
   PaymentStatus,
   ReservationStatus,
   RideStatus,
+  eventTypes,
 } from "../../utils/constants";
 
 export async function createReservation(
@@ -34,7 +35,7 @@ export async function createReservation(
     await getUser(passengerId);
     const ride = await getRideById(rideId);
 
-    await validateRideStatus(ride, RideStatus.SCHEDULED);
+    validateRideStatus(ride, RideStatus.SCHEDULED);
     await validateAvailableSeats(ride);
     await validateDriverPassenger(ride, passengerId);
     await validateExistingReservation(rideId, passengerId);
@@ -53,7 +54,7 @@ export async function createReservation(
       data: { available_seats: ride.available_seats - 1 },
     });
 
-    request.server.eventBus.emit("reservationCreated", newReservation);
+    request.server.eventBus.emit(eventTypes.reservationCreated, newReservation);
 
     return reply.status(201).send(newReservation);
   } catch (error) {

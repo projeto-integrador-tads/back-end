@@ -1,7 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
 import { dayjs } from "../../utils/dayjs";
-import { sanitizeRide } from "../../utils/sanitize";
 import { getOrCreateAddress } from "../addresses/getOrCreateAddress";
 import {
   validateDriver,
@@ -11,7 +10,7 @@ import {
 } from "./validations/validations";
 import { handleValidationError } from "../../exeptions/handleValidationError";
 import { CreateRideInput, NewRideType } from "../../types";
-import { RideStatus } from "../../utils/constants";
+import { RideStatus, eventTypes } from "../../utils/constants";
 
 export async function createRide(
   request: FastifyRequest<{
@@ -107,15 +106,14 @@ export async function createRide(
       },
     });
 
-    request.server.eventBus.emit("rideCreated", newRide);
+    request.server.eventBus.emit(eventTypes.rideCreated, newRide);
 
     return reply.status(201).send(newRide);
   } catch (error) {
+    handleValidationError(error, reply);
     if (error instanceof Error) {
       return reply.status(400).send({ error: error.message });
     }
-    handleValidationError(error, reply);
-    console.error("Erro ao criar a corrida:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

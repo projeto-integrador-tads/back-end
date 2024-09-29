@@ -16,6 +16,7 @@ import {
   ReservationStatus,
   PaymentStatus,
   RideStatus,
+  eventTypes,
 } from "../../utils/constants";
 
 export async function confirmReservation(
@@ -63,7 +64,10 @@ export async function confirmReservation(
       },
     });
 
-    request.server.eventBus.emit("reservationConfirmed", updatedReservation);
+    request.server.eventBus.emit(
+      eventTypes.reservationConfirmed,
+      updatedReservation
+    );
 
     return reply.status(200).send({
       message: "Reserva confirmada com sucesso.",

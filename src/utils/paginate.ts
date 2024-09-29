@@ -19,7 +19,7 @@ export async function paginate<T, K extends PrismaModel>(
   args: any,
   page: number = 1,
   perPage: number = 10,
-  sanitizeCallback?: (item: any) => Object
+  sanitizeCallback?: (item: any) => object
 ): Promise<PaginatedResult<T>> {
   const skip = (page - 1) * perPage;
 

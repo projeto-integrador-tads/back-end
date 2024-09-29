@@ -1,7 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
 import {
-  validateDriver,
   getRideById,
   validateRideOwnership,
   validateRideStatus,
@@ -9,7 +8,7 @@ import {
 import { validateConfirmedReservations } from "../reservations/validations/validations";
 import { StartRide } from "../../types";
 import { handleValidationError } from "../../exeptions/handleValidationError";
-import { RideStatus } from "../../utils/constants";
+import { RideStatus, eventTypes } from "../../utils/constants";
 import { ValidationError } from "../../exeptions/validationError";
 import { dayjs } from "../../utils/dayjs";
 
@@ -27,7 +26,7 @@ export async function startRide(
   try {
     const ride = await getRideById(rideId);
     await validateRideOwnership(ride, driverId);
-    await validateRideStatus(ride, RideStatus.SCHEDULED);
+    validateRideStatus(ride, RideStatus.SCHEDULED);
 
     const now = dayjs();
     const startTime = dayjs(ride.start_time);
@@ -44,7 +43,7 @@ export async function startRide(
       data: { status: RideStatus.IN_PROGRESS },
     });
 
-    request.server.eventBus.emit("rideStarted", updatedRide);
+    request.server.eventBus.emit(eventTypes.rideStarted, updatedRide);
 
     return reply.status(200).send(updatedRide);
   } catch (error) {

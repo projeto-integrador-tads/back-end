@@ -1,8 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../models";
+import { AddressIdInput } from "../../types";
 
 export const deleteAddress = async (
-  request: FastifyRequest<{ Params: { id: string } }>,
+  request: FastifyRequest<{ Params: AddressIdInput }>,
   reply: FastifyReply
 ) => {
   const { id } = request.params;

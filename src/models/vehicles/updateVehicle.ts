@@ -43,7 +43,6 @@ export async function updateVehicle(
     return reply.status(200).send(sanitizeVehicle(updatedVehicle));
   } catch (error) {
     handleValidationError(error, reply);
-    console.error("Erro ao atualizar o veículo:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

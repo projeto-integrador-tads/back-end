@@ -12,6 +12,7 @@ import {
 } from "./validations/validations";
 import { handleValidationError } from "../../exeptions/handleValidationError";
 import { UpdateRideInput } from "../../types";
+import { eventTypes } from "../../utils/constants";
 
 export async function updateRide(
   request: FastifyRequest<{
@@ -34,19 +35,19 @@ export async function updateRide(
     preferences,
   } = request.body;
 
-  const driver_id = request.userData?.id;
+  const driverId = request.userData?.id;
 
-  if (!driver_id) {
+  if (!driverId) {
     return reply.status(401).send({ error: "Usuário não autenticado." });
   }
 
   try {
-    await validateDriver(driver_id);
+    await validateDriver(driverId);
     const existingRide = await getRideById(ride_id);
-    await validateRideOwnership(existingRide, driver_id);
+    await validateRideOwnership(existingRide, driverId);
 
     if (vehicle_id) {
-      await validateVehicle(vehicle_id, driver_id);
+      await validateVehicle(vehicle_id, driverId);
     }
 
     if (start_time) {
@@ -82,7 +83,7 @@ export async function updateRide(
       data: updateData,
     });
 
-    request.server.eventBus.emit("rideUpdated", updatedRide);
+    request.server.eventBus.emit(eventTypes.rideUpdated, updatedRide);
 
     return reply.status(200).send(sanitizeRide(updatedRide));
   } catch (error) {

@@ -1,12 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../models";
-import { verifyResetCodeSchema } from "../../utils/schemas";
-import { z } from "zod";
-
-type ForgotPasswordRequestBody = z.infer<typeof verifyResetCodeSchema>;
+import { VerifyResetCode } from "../../types";
+import { dayjs } from "../../utils/dayjs";
 
 export async function verifyResetCode(
-  request: FastifyRequest<{ Body: ForgotPasswordRequestBody }>,
+  request: FastifyRequest<{ Body: VerifyResetCode }>,
   reply: FastifyReply
 ) {
   const { email, resetCode } = request.body;
@@ -26,7 +24,10 @@ export async function verifyResetCode(
       });
     }
 
-    if (passwordReset.expiresAt < new Date()) {
+    const now = dayjs();
+    const expiresAt = dayjs(passwordReset.expiresAt);
+
+    if (now.isAfter(expiresAt)) {
       return reply.status(400).send({ error: "Código expirado." });
     }
 

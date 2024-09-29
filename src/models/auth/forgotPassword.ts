@@ -1,11 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 import { models } from "../models";
 import { generateResetCode } from "./resetCode";
-import { forgotPasswordSchema } from "../../utils/schemas";
 import { dayjs } from "../../utils/dayjs";
-
-type ForgotPasswordRequestBody = z.infer<typeof forgotPasswordSchema>;
+import { eventTypes } from "../../utils/constants";
+import { ForgotPasswordRequestBody } from "../../types";
 
 export async function forgotPassword(
   request: FastifyRequest<{ Body: ForgotPasswordRequestBody }>,
@@ -29,16 +27,15 @@ export async function forgotPassword(
       existingToken &&
       now.diff(existingToken.lastEmailSentAt, "second") < 60
     ) {
-      return reply
-        .status(429)
-        .send({
-          error:
-            "Por favor, aguarde 60 segundos antes de solicitar um novo código.",
-        });
+      return reply.status(429).send({
+        error:
+          "Por favor, aguarde 60 segundos antes de solicitar um novo código.",
+      });
     }
 
     const resetCode = generateResetCode();
-    const expiresAt = dayjs(new Date()).add(15, "minutes").toDate();
+    const expiresAt = dayjs().add(15, "minutes").toDate();
+    const lastEmailSentAt = dayjs().toDate();
 
     await models.passwordResetToken.upsert({
       where: { email },
@@ -46,18 +43,18 @@ export async function forgotPassword(
         resetCode,
         expiresAt,
         attempts: 0,
-        lastEmailSentAt: new Date(),
+        lastEmailSentAt,
       },
       create: {
         email,
         resetCode,
         expiresAt,
         attempts: 0,
-        lastEmailSentAt: new Date(),
+        lastEmailSentAt,
       },
     });
 
-    request.server.eventBus.emit("forgotPassword", {
+    request.server.eventBus.emit(eventTypes.forgotPassword, {
       email,
       name: user.name,
       resetCode,
