@@ -43,6 +43,7 @@ export const eventTypes = {
   reviewCreated: "reviewCreated",
   reviewUpdated: "reviewUpdated",
   reviewDeleted: "reviewDeleted",
+  userLoggedOut: "userLoggedOut",
 } as const;
 
 export const pushTypes = {

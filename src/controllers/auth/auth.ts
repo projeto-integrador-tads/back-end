@@ -11,6 +11,7 @@ import {
   resetPasswordSchema,
   verifyResetCodeSchema,
 } from "../../models/auth/validations/schemas";
+import { logout } from "../../models/auth/logout";
 
 export async function authController(app: FastifyInstance) {
   app.post(
@@ -67,4 +68,6 @@ export async function authController(app: FastifyInstance) {
     },
     resetPassword
   );
+
+  app.post("/logout", logout);
 }

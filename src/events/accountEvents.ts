@@ -8,17 +8,18 @@ import {
 } from "../services/email/emailService";
 import { ReservationStatus, RideStatus, User } from "@prisma/client";
 import { models } from "../models/models";
+import { eventTypes } from "../utils/constants";
 
 export const accountEvents = (app: FastifyInstance) => {
   app.eventBus.on("userRegistered", async (user: User) => {
     try {
       await sendWelcomeEmail(user.email, user.name);
     } catch (emailError) {
-      app.log.error("Failed to send welcome email:", emailError);
+      app.log.error("Falha ao enviar email de boas vindas:", emailError);
     }
   });
 
-  app.eventBus.on("accountReactivated", async (user: User) => {
+  app.eventBus.on(eventTypes.accountReactivated, async (user: User) => {
     try {
       await sendAccountReactivationEmail(user.email, user.name);
     } catch (emailError) {
@@ -29,7 +30,7 @@ export const accountEvents = (app: FastifyInstance) => {
     }
   });
 
-  app.eventBus.on("accountDeactivated", async (user: User) => {
+  app.eventBus.on(eventTypes.accountDeactivated, async (user: User) => {
     try {
       await models.reservation.updateMany({
         where: {
@@ -61,13 +62,8 @@ export const accountEvents = (app: FastifyInstance) => {
             data: { status: ReservationStatus.CANCELLED },
           });
 
-          app.eventBus.emit("rideCancelled", ride);
+          app.eventBus.emit(eventTypes.rideCancelled, ride);
         }
-
-        await models.vehicle.updateMany({
-          where: { owner_id: user.id },
-          data: { active: false },
-        });
       }
 
       await sendAccountDeactivationEmail(user.email, user.name);
@@ -76,18 +72,21 @@ export const accountEvents = (app: FastifyInstance) => {
     }
   });
 
-  app.eventBus.on("forgotPassword", async ({ email, name, resetCode }) => {
-    try {
-      await sendPasswordResetEmail(email, name, resetCode);
-    } catch (emailError) {
-      app.log.error(
-        "Falha ao enviar o email de esquecimento de senha:",
-        emailError
-      );
+  app.eventBus.on(
+    eventTypes.forgotPassword,
+    async ({ email, name, resetCode }) => {
+      try {
+        await sendPasswordResetEmail(email, name, resetCode);
+      } catch (emailError) {
+        app.log.error(
+          "Falha ao enviar o email de esquecimento de senha:",
+          emailError
+        );
+      }
     }
-  });
+  );
 
-  app.eventBus.on("passwordChanged", async (user: User) => {
+  app.eventBus.on(eventTypes.passwordChanged, async (user: User) => {
     try {
       await passwordChangedEmail(user.email, user.name);
     } catch (emailError) {

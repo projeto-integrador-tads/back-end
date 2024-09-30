@@ -4,27 +4,30 @@ import { sendMessage } from "../../models/messages/sendMessage";
 import { getMessagesByRide } from "../../models/messages/getMessagesByRide";
 import { paginationSchema } from "../../utils/schemas";
 import { messageListingParamans } from "../../models/messages/validations/schemas";
+import { WebSocketWithUserData } from "../../types";
 
-interface WebSocketWithUserData extends WebSocket {
-  userData?: { id: string };
-}
-
-export const messageController: FastifyPluginAsync = async (fastify) => {
-  fastify.get(
+export const messageController: FastifyPluginAsync = async (app) => {
+  app.get(
     "/ws",
     { websocket: true },
     (socket: WebSocketWithUserData, req: FastifyRequest) => {
       const userId = req.userData?.id;
+
       if (userId) {
         socket.userData = { id: userId };
       }
+
       socket.on("message", async (message) => {
         await sendMessage(socket, req, message.toString());
+      });
+
+      socket.on("close", () => {
+        app.eventBus.removeAllListeners();
       });
     }
   );
 
-  fastify.get(
+  app.get(
     "/messages/:ride_id",
     {
       schema: {

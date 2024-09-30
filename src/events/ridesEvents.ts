@@ -7,9 +7,10 @@ import {
 } from "../services/email/emailService";
 import { Ride } from "@prisma/client";
 import { NewRideType } from "../types";
+import { ReservationStatus, eventTypes } from "../utils/constants";
 
 export const rideEvents = (app: FastifyInstance) => {
-  app.eventBus.on("rideCreated", async (data: NewRideType) => {
+  app.eventBus.on(eventTypes.rideCreated, async (data: NewRideType) => {
     try {
       await sendRideCreationEmail(data);
     } catch (emailError) {
@@ -17,7 +18,7 @@ export const rideEvents = (app: FastifyInstance) => {
     }
   });
 
-  app.eventBus.on("rideUpdated", async (rideDetails: Ride) => {
+  app.eventBus.on(eventTypes.rideUpdated, async (rideDetails: Ride) => {
     try {
       const reservations = await models.reservation.findMany({
         where: { ride_id: rideDetails.ride_id },
@@ -42,7 +43,7 @@ export const rideEvents = (app: FastifyInstance) => {
     }
   });
 
-  app.eventBus.on("rideCancelled", async (rideDetails: Ride) => {
+  app.eventBus.on(eventTypes.rideCancelled, async (rideDetails: Ride) => {
     try {
       const reservations = await models.reservation.findMany({
         where: { ride_id: rideDetails.ride_id },
@@ -53,7 +54,7 @@ export const rideEvents = (app: FastifyInstance) => {
 
       await models.reservation.updateMany({
         where: { ride_id: rideDetails.ride_id },
-        data: { status: "CANCELLED" },
+        data: { status: ReservationStatus.CANCELLED },
       });
 
       const notifications = reservations.map((reservation) =>

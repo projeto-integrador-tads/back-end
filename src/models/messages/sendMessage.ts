@@ -2,6 +2,7 @@ import { FastifyRequest } from "fastify";
 import { models } from "../models";
 import { z } from "zod";
 import WebSocket from "ws";
+import { ReservationStatus, RideStatus } from "../../utils/constants";
 
 const messageSchema = z.object({
   ride_id: z.string().uuid(),
@@ -30,7 +31,7 @@ export async function sendMessage(
       include: { Reservations: true },
     });
 
-    if (!ride || ride.status === "COMPLETED") {
+    if (!ride || ride.status === RideStatus.COMPLETED) {
       socket.send(
         JSON.stringify({ error: "Corrida não encontrada ou já finalizada." })
       );
@@ -41,7 +42,8 @@ export async function sendMessage(
     const isPassenger = ride.Reservations.some(
       (res) =>
         res.passenger_id === sender_id &&
-        (res.status === "PENDING" || res.status === "CONFIRMED")
+        (res.status === ReservationStatus.PENDING ||
+          res.status === ReservationStatus.CONFIRMED)
     );
 
     if (!isDriver && !isPassenger) {
@@ -83,8 +85,6 @@ export async function sendMessage(
     if (receiverConnection) {
       receiverConnection.send(messageToSend);
     }
-
-    socket.send(messageToSend);
   } catch (error) {
     console.error("Erro ao enviar mensagem:", error);
     socket.send(JSON.stringify({ error: "Erro interno no servidor." }));

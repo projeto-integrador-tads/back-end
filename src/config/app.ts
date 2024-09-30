@@ -18,7 +18,9 @@ import { messageController } from "../controllers/messages/messageController";
 import fastifyMultipart from "@fastify/multipart";
 import { ZodError } from "zod";
 import { addressController } from "../controllers/addresses/addressController";
-import { websocketsController } from "../controllers/socket/sendEvents";
+import { websocketsController } from "../controllers/websockets/sendEvents";
+import fastifySchedule from "@fastify/schedule";
+import { setupTokenCleanupTask } from "./tasks/clearTokens";
 
 const app = Fastify();
 
@@ -38,6 +40,7 @@ app.register(eventPlugin);
 app.register(messageController);
 app.register(addressController);
 app.register(websocketsController);
+app.register(fastifySchedule);
 
 app.setErrorHandler((error, request, reply) => {
   if (error instanceof ZodError) {
@@ -58,6 +61,8 @@ app.ready((err) => {
     process.exit(1);
   }
   setupEvents(app);
+  const job = setupTokenCleanupTask(app);
+  app.scheduler.addSimpleIntervalJob(job);
 });
 
 export default app;

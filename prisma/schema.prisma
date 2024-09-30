@@ -28,6 +28,7 @@ model User {
   VehiclesOwned    Vehicle[]
   MessagesSent     Message[]     @relation("MessagesSent")
   MessagesReceived Message[]     @relation("MessagesReceived")
+  Token            Token[]
 }
 
 model Address {
@@ -115,11 +116,21 @@ model Message {
   sender_id   String
   receiver_id String
   ride_id     String?
-  content     String
+  content     String   @db.VarChar(500)
   createdAt   DateTime @default(now())
   Sender      User     @relation("MessagesSent", fields: [sender_id], references: [id])
   Receiver    User     @relation("MessagesReceived", fields: [receiver_id], references: [id])
   Ride        Ride?    @relation(fields: [ride_id], references: [ride_id])
+}
+
+model Token {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.VarChar(512)
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model PasswordResetToken {
