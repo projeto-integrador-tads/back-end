@@ -32,3 +32,16 @@ export const resetPasswordSchema = z.object({
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Email em formato inválido."),
 });
+
+export const changePasswordSchema = z.object({
+  currentPassword: z
+    .string()
+    .min(8, "A senha atual precisa conter pelo menos 8 caracteres."),
+  newPassword: z
+    .string()
+    .regex(password, {
+      message:
+        "A nova senha deve conter pelo menos 1 letra maiúscula, 1 letra minúscula, 1 número e pode conter caracteres especiais.",
+    })
+    .min(8, "A nova senha precisa conter pelo menos 8 caracteres."),
+});

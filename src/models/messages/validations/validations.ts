@@ -1,34 +1,21 @@
-import { FastifyRequest } from "fastify";
 import { models } from "../../models";
-import { z } from "zod";
-import WebSocket from "ws";
 import { ReservationStatus, RideStatus } from "../../../utils/constants";
+import { ValidationError } from "../../../exeptions/validationError";
 
-async function validateSender(
-  sender_id: string | undefined,
-  socket: WebSocket
-) {
-  if (!sender_id) {
-    socket.send(JSON.stringify({ error: "Usuário não autenticado." }));
-    return false;
-  }
-  return true;
-}
-
-async function validateRide(ride_id: string) {
+export async function validateRide(ride_id: string) {
   const ride = await models.ride.findUnique({
     where: { ride_id },
     include: { Reservations: true },
   });
 
   if (!ride || ride.status === RideStatus.COMPLETED) {
-    throw new Error("Corrida não encontrada ou já finalizada.");
+    throw new ValidationError("Corrida não encontrada ou já finalizada.");
   }
 
   return ride;
 }
 
-function validateParticipants(
+export function validateParticipants(
   ride: any,
   sender_id: string,
   receiver_id: string
@@ -42,7 +29,7 @@ function validateParticipants(
   );
 
   if (!isDriver && !isPassenger) {
-    throw new Error(
+    throw new ValidationError(
       "Você não tem permissão para enviar mensagens nesta corrida."
     );
   }
@@ -56,36 +43,6 @@ function validateParticipants(
   );
 
   if (!isReceiverDriver && !isReceiverPassenger) {
-    throw new Error("Destinatário inválido.");
+    throw new ValidationError("Destinatário inválido.");
   }
-}
-
-async function createAndSendMessage(
-  sender_id: string,
-  receiver_id: string,
-  ride_id: string,
-  content: string,
-  socket: WebSocket,
-  request: FastifyRequest
-) {
-  const message = await models.message.create({
-    data: {
-      sender_id,
-      receiver_id,
-      ride_id,
-      content,
-    },
-  });
-
-  const messageToSend = JSON.stringify(message);
-
-  const receiverConnection = Array.from(
-    request.server.websocketServer.clients
-  ).find((client: any) => client.userData?.id === receiver_id);
-
-  if (receiverConnection) {
-    receiverConnection.send(messageToSend);
-  }
-
-  socket.send(messageToSend);
 }

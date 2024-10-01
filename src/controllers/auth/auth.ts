@@ -6,12 +6,14 @@ import { verifyResetCode } from "../../models/auth/verifyResetCode";
 import { resetPassword } from "../../models/auth/resetPassword";
 import { userSchema } from "../../models/users/validations/schema";
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   resetPasswordSchema,
   verifyResetCodeSchema,
 } from "../../models/auth/validations/schemas";
 import { logout } from "../../models/auth/logout";
+import { changePassword } from "../../models/auth/changePassword";
 
 export async function authController(app: FastifyInstance) {
   app.post(
@@ -67,6 +69,16 @@ export async function authController(app: FastifyInstance) {
       config: { public: true },
     },
     resetPassword
+  );
+
+  app.post(
+    "/change-password",
+    {
+      schema: {
+        body: changePasswordSchema,
+      },
+    },
+    changePassword
   );
 
   app.post("/logout", logout);

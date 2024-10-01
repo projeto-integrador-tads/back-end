@@ -35,7 +35,7 @@ app.register(ridesController);
 app.register(reservationController);
 app.register(authController);
 app.register(reviewsController);
-app.register(websocket);
+app.register(websocket, { options: { clientTracking: true } });
 app.register(eventPlugin);
 app.register(messageController);
 app.register(addressController);

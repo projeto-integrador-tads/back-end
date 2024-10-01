@@ -35,6 +35,7 @@ import {
   pushTypes,
 } from "../utils/constants";
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   resetPasswordSchema,
@@ -143,6 +144,7 @@ export type ReservationStatusType =
 
 export type EventTypes = (typeof eventTypes)[keyof typeof eventTypes];
 
+export type ChangePasswordRequestBody = z.infer<typeof changePasswordSchema>;
 export type PushTypes = (typeof pushTypes)[keyof typeof pushTypes];
 interface WebSocketWithUserData extends WebSocket {
   userData?: { id: string };

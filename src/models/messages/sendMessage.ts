@@ -1,33 +1,31 @@
 import { FastifyRequest } from "fastify";
 import { models } from "../models";
-import { z } from "zod";
 import WebSocket from "ws";
-import { ReservationStatus, RideStatus } from "../../utils/constants";
-
-const messageSchema = z.object({
-  ride_id: z.string().uuid(),
-  receiver_id: z.string().uuid(),
-  content: z.string().min(1).max(500),
-});
+import {
+  ReservationStatus,
+  RideStatus,
+  eventTypes,
+} from "../../utils/constants";
+import { sendMessageSchema } from "./validations/schemas";
 
 export async function sendMessage(
   socket: WebSocket,
   request: FastifyRequest,
   messageData: string
 ) {
-  const sender_id = request.userData?.id;
+  const senderId = request.userData?.id;
 
-  if (!sender_id) {
+  if (!senderId) {
     socket.send(JSON.stringify({ error: "Usuário não autenticado." }));
     return;
   }
 
   try {
-    const parsedMessage = messageSchema.parse(JSON.parse(messageData));
-    const { ride_id, receiver_id, content } = parsedMessage;
+    const parsedMessage = sendMessageSchema.parse(JSON.parse(messageData));
+    const { ride_id: rideId, receiver_id: receiverId, content } = parsedMessage;
 
     const ride = await models.ride.findUnique({
-      where: { ride_id },
+      where: { ride_id: rideId },
       include: { Reservations: true },
     });
 
@@ -38,10 +36,10 @@ export async function sendMessage(
       return;
     }
 
-    const isDriver = ride.driver_id === sender_id;
+    const isDriver = ride.driver_id === senderId;
     const isPassenger = ride.Reservations.some(
       (res) =>
-        res.passenger_id === sender_id &&
+        res.passenger_id === senderId &&
         (res.status === ReservationStatus.PENDING ||
           res.status === ReservationStatus.CONFIRMED)
     );
@@ -55,11 +53,12 @@ export async function sendMessage(
       return;
     }
 
-    const isReceiverDriver = ride.driver_id === receiver_id;
+    const isReceiverDriver = ride.driver_id === receiverId;
     const isReceiverPassenger = ride.Reservations.some(
       (res) =>
-        res.passenger_id === receiver_id &&
-        (res.status === "PENDING" || res.status === "CONFIRMED")
+        res.passenger_id === receiverId &&
+        (res.status === ReservationStatus.PENDING ||
+          res.status === ReservationStatus.CONFIRMED)
     );
 
     if (!isReceiverDriver && !isReceiverPassenger) {
@@ -69,24 +68,27 @@ export async function sendMessage(
 
     const message = await models.message.create({
       data: {
-        sender_id,
-        receiver_id,
-        ride_id,
+        sender_id: senderId,
+        receiver_id: receiverId,
+        ride_id: rideId,
         content,
       },
     });
 
     const messageToSend = JSON.stringify(message);
 
+    socket.send(JSON.stringify({ sucess: true }));
+
     const receiverConnection = Array.from(
       request.server.websocketServer.clients
-    ).find((client: any) => client.userData?.id === receiver_id);
+    ).find((client: any) => client.userData?.id === receiverId);
 
     if (receiverConnection) {
       receiverConnection.send(messageToSend);
     }
+
+    request.server.eventBus.emit(eventTypes.messageReceived, message);
   } catch (error) {
-    console.error("Erro ao enviar mensagem:", error);
     socket.send(JSON.stringify({ error: "Erro interno no servidor." }));
   }
 }
