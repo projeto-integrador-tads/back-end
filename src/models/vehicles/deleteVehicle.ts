@@ -1,64 +1,65 @@
-import { Prisma } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../../models/models";
+import { DeleteVehicleInput } from "../../types";
+import {
+  findVehicle,
+  vehicleCheckOwnership,
+  vehicleActive,
+} from "./validation/validation";
+import { handleValidationError } from "../../exeptions/handleValidationError";
+import { RideStatus } from "../../utils/constants";
 
 export const deleteVehicle = async (
-  request: FastifyRequest<{ Params: { vehicle_id: string } }>,
-  response: FastifyReply
+  request: FastifyRequest<{ Params: DeleteVehicleInput }>,
+  reply: FastifyReply
 ) => {
-  const { vehicle_id } = request.params;
+  const { vehicle_id: vehicleId } = request.params;
+  const ownerId = request.userData?.id;
+
+  if (!ownerId) {
+    return reply.status(401).send({ error: "Usuário não autenticado." });
+  }
 
   try {
-    // Verifica o status atual do veículo
-    const vehicle = await models.vehicle.findUnique({
-      where: { vehicle_id },
-      select: { active: true },
-    });
+    const vehicle = await findVehicle(vehicleId);
+    vehicleCheckOwnership(vehicle, ownerId);
+    await vehicleActive(vehicleId);
 
-    if (!vehicle) {
-      return response.status(404).send({ error: "Veículo não encontrado." });
-    }
-
-    if (!vehicle.active) {
-      return response
-        .status(400)
-        .send({ error: "O veículo já está desativado." });
-    }
-
-    // Verifica se há corridas associadas ao veículo
     const rides = await models.ride.findMany({
-      where: { vehicle_id },
+      where: { vehicle_id: vehicleId },
       select: { status: true },
     });
 
-    // Se houver corridas com status que impede a desativação (por exemplo, em progresso)
     const hasActiveRides = rides.some(
-      (ride) => ride.status === "IN_PROGRESS" || ride.status === "SCHEDULED"
+      (ride) => ride.status === RideStatus.IN_PROGRESS || RideStatus.SCHEDULED
     );
 
     if (hasActiveRides) {
-      return response
-        .status(400)
-        .send({
-          error:
-            "O veículo tem corridas agendadas ou em andamento e não pode ser desativado.",
-        });
+      return reply.status(400).send({
+        error:
+          "O veículo tem corridas agendadas ou em andamento e não pode ser desativado.",
+      });
     }
 
-    // Atualiza o status do veículo para inativo
     await models.vehicle.update({
-      where: { vehicle_id },
+      where: { vehicle_id: vehicleId },
       data: { active: false },
     });
 
-    return response.status(204).send();
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      return response.status(404).send({ error: "Veículo não encontrado." });
+    const activeVehiclesCount = await models.vehicle.count({
+      where: { owner_id: ownerId, active: true },
+    });
+
+    if (activeVehiclesCount === 0) {
+      await models.user.update({
+        where: { id: ownerId },
+        data: { is_driver: false },
+      });
     }
-    return response.status(500).send({ error: "Erro interno do servidor." });
+
+    return reply.status(204).send();
+  } catch (error) {
+    handleValidationError(error, reply);
+    return reply.status(500).send({ error: "Erro interno do servidor." });
   }
 };

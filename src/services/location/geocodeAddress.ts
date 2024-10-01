@@ -1,3 +1,5 @@
+import env from "../../../env";
+
 interface Location {
   lat: number;
   lng: number;
@@ -5,7 +7,7 @@ interface Location {
   formattedAddress: string;
 }
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = env.GOOGLE_MAPS_API_KEY;
 
 export async function geocodeAddress(
   address: string
@@ -22,7 +24,6 @@ export async function geocodeAddress(
       const result = data.results[0];
       const location = result.geometry.location;
 
-      // Procura pela cidade nos componentes de endereço
       const addressComponents = result.address_components;
       let city = "";
       for (const component of addressComponents) {

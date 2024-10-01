@@ -1,99 +1,139 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
+import { paginate } from "../../utils/paginate";
+import { Ride } from "@prisma/client";
+import { validateDriver } from "./validations/validations";
+import { ValidationError } from "../../exeptions/validationError";
+import { PaginationInput, SearchRide, SearchRideByCity } from "../../types";
+import { handleValidationError } from "../../exeptions/handleValidationError";
 
 export async function getRidesByDriver(
   request: FastifyRequest<{
-    Querystring: { page: number; pageSize: number };
+    Querystring: PaginationInput;
   }>,
   reply: FastifyReply
 ) {
   const driverId = request.userData?.id;
-  const { page = 1, pageSize = 10 } = request.query;
+  const { page = 1, perPage = 10 } = request.query;
 
   try {
-    const skip = (page - 1) * pageSize;
-    const rides = await models.ride.findMany({
-      where: { driver_id: driverId },
-      orderBy: { start_time: "desc" },
-      skip,
-      take: pageSize,
-      include: {
-        StartAddress: true,
-        EndAddress: true,
-      },
-    });
+    await validateDriver(driverId);
 
-    return reply.send({ data: rides });
+    const paginatedRides = await paginate<Ride, "ride">(
+      models.ride,
+      {
+        where: { driver_id: driverId },
+        orderBy: { start_time: "desc" },
+        include: {
+          StartAddress: true,
+          EndAddress: true,
+        },
+      },
+      page,
+      perPage
+    );
+
+    return reply.send(paginatedRides);
   } catch (error) {
-    console.error("Erro ao buscar corridas pelo motorista:", error);
+    handleValidationError(error, reply);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }
 
 export async function getRidesByStartCity(
   request: FastifyRequest<{
-    Querystring: { page: number; pageSize: number };
-    Params: { city: string };
+    Querystring: PaginationInput;
+    Params: SearchRideByCity;
   }>,
   reply: FastifyReply
 ) {
   const { city } = request.params;
-  const { page = 1, pageSize = 10 } = request.query;
+  const { page = 1, perPage = 10 } = request.query;
 
   try {
-    const skip = (page - 1) * pageSize;
-    const rides = await models.ride.findMany({
-      where: {
-        StartAddress: {
-          city: { contains: city },
+    const paginatedRides = await paginate<Ride, "ride">(
+      models.ride,
+      {
+        where: {
+          StartAddress: {
+            city: { contains: city },
+          },
+        },
+        orderBy: { start_time: "desc" },
+        include: {
+          StartAddress: true,
+          EndAddress: true,
         },
       },
-      orderBy: { start_time: "desc" },
-      skip,
-      take: pageSize,
-      include: {
-        StartAddress: true,
-        EndAddress: true,
-      },
-    });
+      page,
+      perPage
+    );
 
-    return reply.send({ data: rides });
+    return reply.send(paginatedRides);
   } catch (error) {
-    console.error("Erro ao buscar corridas pela cidade de saída:", error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }
 
 export async function getRidesByDestinationCity(
   request: FastifyRequest<{
-    Querystring: { page: number; pageSize: number };
-    Params: { city: string };
+    Querystring: PaginationInput;
+    Params: SearchRideByCity;
   }>,
   reply: FastifyReply
 ) {
   const { city } = request.params;
-  const { page = 1, pageSize = 10 } = request.query;
+  const { page = 1, perPage = 10 } = request.query;
 
   try {
-    const skip = (page - 1) * pageSize;
-    const rides = await models.ride.findMany({
-      where: {
-        EndAddress: {
-          city: { contains: city },
+    const paginatedRides = await paginate<Ride, "ride">(
+      models.ride,
+      {
+        where: {
+          EndAddress: {
+            city: { contains: city },
+          },
+        },
+        orderBy: { start_time: "desc" },
+        include: {
+          StartAddress: true,
+          EndAddress: true,
         },
       },
-      orderBy: { start_time: "desc" },
-      skip,
-      take: pageSize,
+      page,
+      perPage
+    );
+
+    return reply.send(paginatedRides);
+  } catch (error) {
+    return reply.status(500).send({ error: "Erro interno no servidor." });
+  }
+}
+
+export async function getRideById(
+  request: FastifyRequest<{
+    Params: SearchRide;
+  }>,
+  reply: FastifyReply
+) {
+  const { ride_id: rideId } = request.params;
+
+  try {
+    const rideWithDetails = await models.ride.findUnique({
+      where: { ride_id: rideId },
       include: {
         StartAddress: true,
         EndAddress: true,
       },
     });
 
-    return reply.send({ data: rides });
+    if (!rideWithDetails) {
+      throw new ValidationError("Corrida não encontrada.");
+    }
+
+    return reply.status(200).send(rideWithDetails);
   } catch (error) {
-    console.error("Erro ao buscar corridas pelo destino:", error);
+    handleValidationError(error, reply);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 }

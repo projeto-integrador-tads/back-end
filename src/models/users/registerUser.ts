@@ -2,10 +2,9 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@prisma/client";
 import { models } from "../../models/models";
 import { hashPassword } from "../../services/security/encrypt";
-import { userSchema } from "../../utils/schemas";
-import { TypeOf } from "zod";
-
-type UserRequestBody = TypeOf<typeof userSchema>;
+import { sanitizeUser } from "../../utils/sanitize";
+import { UserRequestBody } from "../../types";
+import { eventTypes } from "../../utils/constants";
 
 export const registerUser = async (
   request: FastifyRequest<{ Body: UserRequestBody }>,
@@ -26,9 +25,9 @@ export const registerUser = async (
       },
     });
 
-    request.server.eventBus.emit("userRegistered", { email, name });
+    request.server.eventBus.emit(eventTypes.userRegistered, user);
 
-    return { user_id: user.id, name, last_name, email, phone_number };
+    return sanitizeUser(user);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -36,7 +35,6 @@ export const registerUser = async (
     ) {
       return reply.status(409).send({ error: "O email já existe." });
     }
-    console.error(error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
 };

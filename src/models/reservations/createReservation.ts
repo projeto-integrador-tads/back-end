@@ -1,111 +1,64 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { models } from "../../models/models";
-import { createReservationSchema } from "../../utils/schemas";
-import { z } from "zod";
-type CreateReservationInput = z.infer<typeof createReservationSchema>;
+import { ValidationError } from "../../exeptions/validationError";
+import {
+  getRideById,
+  validateRideStatus,
+  validateAvailableSeats,
+} from "../rides/validations/validations";
+import {
+  validateDriverPassenger,
+  validateExistingReservation,
+} from "./validations/validations";
+import { getUser } from "../users/validations/validations";
+import { handleValidationError } from "../../exeptions/handleValidationError";
+import { CreateReservationInput } from "../../types";
+import {
+  PaymentStatus,
+  ReservationStatus,
+  RideStatus,
+  eventTypes,
+} from "../../utils/constants";
 
-export const createReservation = async (
-  request: FastifyRequest<{ Body: CreateReservationInput }>,
+export async function createReservation(
+  request: FastifyRequest<{ Params: CreateReservationInput }>,
   reply: FastifyReply
-) => {
+) {
   try {
-    const { ride_id } = request.body;
-    const passenger_id = request.userData?.id;
+    const { ride_id: rideId } = request.params;
+    const passengerId = request.userData?.id;
 
-    if (!passenger_id) {
-      throw new Error("O usuário não está logado.");
+    if (!passengerId) {
+      throw new ValidationError("O usuário não está logado.");
     }
 
-    // Verificar se a carona existe
-    const ride = await models.ride.findUnique({
-      where: { ride_id },
-    });
+    await getUser(passengerId);
+    const ride = await getRideById(rideId);
 
-    if (!ride) {
-      return reply.status(404).send({ error: "Corrida não encontrada." });
-    }
+    validateRideStatus(ride, RideStatus.SCHEDULED);
+    await validateAvailableSeats(ride);
+    await validateDriverPassenger(ride, passengerId);
+    await validateExistingReservation(rideId, passengerId);
 
-    if (
-      ride.status === "CANCELLED" ||
-      ride.status === "COMPLETED" ||
-      ride.status === "IN_PROGRESS"
-    ) {
-      return reply.status(404).send({
-        error:
-          "Não é possível reservar uma corrida que está cancelada, completa ou em progresso.",
-      });
-    }
-
-    // Verifica se o usuário existe
-    const passenger = await models.user.findUnique({
-      where: { id: passenger_id },
-    });
-
-    if (!passenger) {
-      return reply.status(404).send({ error: "Usuário não encontrado." });
-    }
-
-    // verifica se o usuário está ativo no sistema
-    if (!passenger.active) {
-      return reply.status(400).send({
-        error: "O usuário está inativo.",
-      });
-    }
-
-    // Verificar se há assentos disponíveis
-    if (ride.available_seats <= 0) {
-      return reply.status(400).send({ error: "Não há assentos disponíveis." });
-    }
-
-    // Verifica se o motorista é diferente do passageiro
-    if (ride.driver_id === passenger_id) {
-      return reply.status(400).send({
-        error: "Não é possível pegar carona em uma corrida criada por você.",
-      });
-    }
-
-    // Verificar se já existe uma reserva ativa ou pendente para o mesmo usuário e corrida
-    try {
-      const existingReservation = await models.reservation.findFirst({
-        where: {
-          ride_id,
-          passenger_id,
-          status: { not: "CANCELLED" },
-        },
-      });
-
-      if (existingReservation) {
-        return reply.status(400).send({
-          error:
-            "Você já possui uma reserva ativa ou pendente para esta corrida.",
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao verificar reserva existente:", error);
-      return reply
-        .status(500)
-        .send({ error: "Erro ao verificar reserva existente." });
-    }
-
-    // Criar a reserva
     const newReservation = await models.reservation.create({
       data: {
-        ride_id,
-        passenger_id,
-        status: "PENDING",
-        payment_status: "PENDING",
+        ride_id: rideId,
+        passenger_id: passengerId,
+        status: ReservationStatus.PENDING,
+        payment_status: PaymentStatus.PENDING,
       },
     });
 
-    // Atualizar o número de assentos disponíveis na carona
     await models.ride.update({
-      where: { ride_id },
+      where: { ride_id: rideId },
       data: { available_seats: ride.available_seats - 1 },
     });
 
+    request.server.eventBus.emit(eventTypes.reservationCreated, newReservation);
+
     return reply.status(201).send(newReservation);
   } catch (error) {
-    console.error("Erro ao criar a reserva:", error);
+    handleValidationError(error, reply);
     return reply.status(500).send({ error: "Erro interno no servidor." });
   }
-};
+}

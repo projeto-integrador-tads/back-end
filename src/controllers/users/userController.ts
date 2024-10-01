@@ -1,31 +1,43 @@
 import { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { userSchema } from "../../utils/schemas";
-import { registerUser } from "../../models/users/registerUser";
 import { getUserById } from "../../models/users/getUser";
 import { deleteUser } from "../../models/users/deleteUser";
-
-interface GetUserByIdParams {
-  id: string;
-}
+import { uploadProfilePicture } from "../../models/users/uploadProfilePicture";
+import { getProfilePicture } from "../../models/users/getProfilePicture";
+import { removeProfilePicture } from "../../models/users/removeProfilePicture";
+import { updateUser } from "../../models/users/updateUser";
+import {
+  updateUserSchema,
+  userIdSchema,
+} from "../../models/users/validations/schema";
 
 export const userController: FastifyPluginAsync = async (
-  fastify: FastifyInstance
+  app: FastifyInstance
 ) => {
-  fastify.post(
+  app.get(
+    "/users/:id",
+    {
+      schema: {
+        params: userIdSchema,
+      },
+    },
+    getUserById
+  );
+
+  app.delete("/users", deleteUser);
+
+  app.post("/users/upload/img", uploadProfilePicture);
+
+  app.get("/users/profile-picture", getProfilePicture);
+
+  app.delete("/users/profile-picture", removeProfilePicture);
+
+  app.put(
     "/users",
     {
       schema: {
-        body: userSchema,
+        body: updateUserSchema,
       },
-      config: { public: true },
     },
-    registerUser
+    updateUser
   );
-
-  fastify.get<{ Params: GetUserByIdParams }>(
-    "/users/:id",
-
-    getUserById
-  );
-  fastify.delete<{ Params: GetUserByIdParams }>("/users/:id", deleteUser);
 };

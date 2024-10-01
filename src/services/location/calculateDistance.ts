@@ -1,9 +1,11 @@
+import env from "../../../env";
+
 interface DistanceResult {
   distance: number;
   duration: string;
 }
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = env.GOOGLE_MAPS_API_KEY;
 
 export async function calculateDistance(
   origin: string,

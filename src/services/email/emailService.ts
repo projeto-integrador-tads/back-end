@@ -1,5 +1,6 @@
 import { getEmailClient } from "./mail";
 import { dayjs } from "../../utils/dayjs";
+import { NewRideType } from "../../types";
 export const sendWelcomeEmail = async (email: string, name: string) => {
   const transporter = await getEmailClient();
 
@@ -24,33 +25,28 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
   });
 };
 
-export const sendRideCreationEmail = async (
-  name: string,
-  email: string,
-  start_location: string,
-  end_location: string,
-  start_time: string,
-  price: number,
-  available_seats: number,
-  preferences: string
-) => {
+export const sendRideCreationEmail = async (data: NewRideType) => {
   const transporter = await getEmailClient();
 
   await transporter.sendMail({
     from: "integrador@rides.com",
-    to: email,
+    to: data.Driver.email,
     subject: "Nova corrida criada! 🚗",
     html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
-    <p>Olá, ${name}!</p>
+    <p>Olá, ${data.Driver.name}!</p>
     <p>Uma nova corrida foi criada com sucesso. Aqui estão os detalhes:</p>
-    <p><strong>Local de Partida:</strong> ${start_location}</p>
-    <p><strong>Local de Chegada:</strong> ${end_location}</p>
-    <p><strong>Data e Hora:</strong> ${dayjs(start_time).format(
+    <p><strong>Local de Partida:</strong> ${
+      data.StartAddress.formattedAddress
+    }</p>
+    <p><strong>Local de Chegada:</strong> ${
+      data.EndAddress.formattedAddress
+    }</p>
+    <p><strong>Data e Hora:</strong> ${dayjs(data.start_time).format(
       "dddd, MMMM D, YYYY H:mm"
     )}</p>
-    <p><strong>Preço:</strong> R$${price.toFixed(2)}</p>
-    <p><strong>Assentos Disponíveis:</strong> ${available_seats}</p>
-    <p><strong>Preferências:</strong> ${preferences}</p>
+    <p><strong>Preço:</strong> R$${data.price.toFixed(2)}</p>
+    <p><strong>Assentos Disponíveis:</strong> ${data.available_seats}</p>
+    <p><strong>Preferências:</strong> ${data.preferences}</p>
     <p></p>
     <p>Se você tiver alguma dúvida ou precisar de mais informações, não hesite em nos contatar.</p>
     <p></p>
@@ -146,5 +142,45 @@ export const sendAccountDeactivationEmail = async (
   <p></p>
   <p>Equipe CaronasApp</p>
 </div>`.trim(),
+  });
+};
+
+export const sendPasswordResetEmail = async (
+  email: string,
+  name: string,
+  resetCode: string
+) => {
+  const transporter = await getEmailClient();
+  await transporter.sendMail({
+    from: "integrador@rides.com",
+    to: email,
+    subject: "Redefinição de Senha",
+    html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+  <p>Olá, ${name}!</p>
+  <p>Recebemos uma solicitação para redefinir sua senha. Use o código abaixo para prosseguir com a redefinição:</p>
+  <h2 style="font-size: 24px; font-weight: bold; text-align: center;">${resetCode}</h2>
+  <p>Este código expirará em 15 minutos.</p>
+  <p>Se você não solicitou a redefinição de senha, por favor, ignore este e-mail.</p>
+  <p></p>
+  <p>Atenciosamente,</p>
+  <p>Equipe CaronasApp</p>
+</div>`.trim(),
+  });
+};
+
+export const passwordChangedEmail = async (email: string, name: string) => {
+  const transporter = await getEmailClient();
+  await transporter.sendMail({
+    from: "integrador@rides.com",
+    to: email,
+    subject: "Sua senha foi alterada",
+    html: `<div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+    <p>Olá, ${name}!</p>
+    <p>Informamos que sua senha foi alterada recentemente.</p>
+    <p>Se você não realizou essa alteração, por favor, entre em contato conosco imediatamente.</p>
+    <p></p>
+    <p>Atenciosamente,</p>
+    <p>Equipe CaronasApp</p>
+  </div>`.trim(),
   });
 };

@@ -19,6 +19,7 @@ model User {
   updatedAt        DateTime      @updatedAt
   active           Boolean       @default(true)
   is_driver        Boolean       @default(false)
+  average_rating   Float?
   savedAddresses   Address[]     @relation("UserSavedAddresses")
   ReviewsWritten   Review[]      @relation("Reviewer")
   ReviewsReceived  Review[]      @relation("Reviewee")
@@ -27,6 +28,7 @@ model User {
   VehiclesOwned    Vehicle[]
   MessagesSent     Message[]     @relation("MessagesSent")
   MessagesReceived Message[]     @relation("MessagesReceived")
+  Token            Token[]
 }
 
 model Address {
@@ -37,6 +39,7 @@ model Address {
   formattedAddress String
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  deleted          Boolean  @default(false)
   user             User?    @relation("UserSavedAddresses", fields: [userId], references: [id])
   userId           String?
   ridesAsStart     Ride[]   @relation("RideStartAddress")
@@ -84,7 +87,7 @@ model Review {
   reviewer_id String
   reviewee_id String
   rating      Int
-  comment     String
+  comment     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   Ride        Ride     @relation(fields: [ride_id], references: [ride_id])
@@ -102,7 +105,6 @@ model Vehicle {
   license_plate String   @unique @db.VarChar(7)
   color         String   @db.VarChar(30)
   seats         Int
-  document      String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   Owner         User     @relation(fields: [owner_id], references: [id])
@@ -114,36 +116,48 @@ model Message {
   sender_id   String
   receiver_id String
   ride_id     String?
-  content     String
+  content     String   @db.VarChar(500)
   createdAt   DateTime @default(now())
   Sender      User     @relation("MessagesSent", fields: [sender_id], references: [id])
   Receiver    User     @relation("MessagesReceived", fields: [receiver_id], references: [id])
   Ride        Ride?    @relation(fields: [ride_id], references: [ride_id])
 }
 
-model PasswordResetToken {
-  email     String   @id
-  token     String
-  createdAt DateTime @default(now())
+model Token {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.VarChar(512)
+  userId    String
   expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
-enum ReservationStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  REFUNDED
-  FAILED
+model PasswordResetToken {
+  email           String   @id
+  resetCode       String
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime
+  attempts        Int      @default(0)
+  lastEmailSentAt DateTime
 }
 
 enum RideStatus {
-  SCHEDULED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+  SCHEDULED   @map("SCHEDULED")
+  IN_PROGRESS @map("IN_PROGRESS")
+  COMPLETED   @map("COMPLETED")
+  CANCELLED   @map("CANCELLED")
+}
+
+enum ReservationStatus {
+  PENDING   @map("PENDING")
+  CONFIRMED @map("CONFIRMED")
+  CANCELLED @map("CANCELLED")
+}
+
+enum PaymentStatus {
+  PENDING  @map("PENDING")
+  PAID     @map("PAID")
+  REFUNDED @map("REFUNDED")
+  FAILED   @map("FAILED")
 }
