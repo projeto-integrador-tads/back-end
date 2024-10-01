@@ -1,7 +1,7 @@
 {
   "name": "integrador-node",
   "version": "1.0.0",
-  "description": "Versão backend em node",
+  "description": "API para gerenciamento de caronas, usuários, veículos e reservas.",
   "main": "server.ts",
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --fix-dry-run",
     "test": "dotenv -e .env.test -- vitest",
     "studio": "npx prisma studio",
-    "migrate": "npx prisma migrate",
+    "migrate": "npx prisma migrate dev",
+    "migrate:reset": "npx prisma migrate reset",
     "test:migrate": "dotenv -e .env.test -- npx prisma migrate dev",
     "test:reset": "dotenv -e .env.test -- npx prisma migrate reset --force"
   },

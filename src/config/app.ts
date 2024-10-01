@@ -18,7 +18,6 @@ import { messageController } from "../controllers/messages/messageController";
 import fastifyMultipart from "@fastify/multipart";
 import { ZodError } from "zod";
 import { addressController } from "../controllers/addresses/addressController";
-import { websocketsController } from "../controllers/websockets/sendEvents";
 import fastifySchedule from "@fastify/schedule";
 import { setupTokenCleanupTask } from "./tasks/clearTokens";
 
@@ -35,11 +34,10 @@ app.register(ridesController);
 app.register(reservationController);
 app.register(authController);
 app.register(reviewsController);
-app.register(websocket, { options: { clientTracking: true } });
+app.register(websocket, { options: { clientTracking: true }});
 app.register(eventPlugin);
 app.register(messageController);
 app.register(addressController);
-app.register(websocketsController);
 app.register(fastifySchedule);
 
 app.setErrorHandler((error, request, reply) => {

@@ -15,11 +15,11 @@ export async function endRide(
   reply: FastifyReply
 ) {
   const { ride_id: rideId } = request.params;
-  const driver_id = request.userData?.id;
+  const driverId = request.userData?.id;
 
   try {
     const ride = await getRideById(rideId);
-    await validateRideOwnership(ride, driver_id!);
+    await validateRideOwnership(ride, driverId!);
     validateRideStatus(ride, RideStatus.IN_PROGRESS);
 
     const updatedRide = await models.ride.update({
