@@ -1,11 +1,11 @@
-# Node Backend - Projeto Integrador
+# Backend - Projeto Integrador
 
 ## Instalação
 
 1. Clone o repositório:
 
 ```bash
-git clone git@github.com:projeto-integrador-tads/node-backend.git
+git clone git@github.com:projeto-integrador-tads/back-end.git
 cd node-backend
 ```
 
