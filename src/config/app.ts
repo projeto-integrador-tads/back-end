@@ -20,6 +20,9 @@ import { ZodError } from "zod";
 import { addressController } from "../controllers/addresses/addressController";
 import fastifySchedule from "@fastify/schedule";
 import { setupTokenCleanupTask } from "./tasks/clearTokens";
+import { fastifyCors } from "@fastify/cors";
+import { fastifySwagger } from "@fastify/swagger";
+import { fastifySwaggerUi } from "@fastify/swagger-ui";
 
 const app = Fastify();
 
@@ -27,18 +30,32 @@ app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 app.register(fastifyMultipart);
-app.register(jwtPlugin);
 app.register(userController);
 app.register(vehicleController);
 app.register(ridesController);
 app.register(reservationController);
 app.register(authController);
 app.register(reviewsController);
-app.register(websocket, { options: { clientTracking: true }});
+app.register(websocket, { options: { clientTracking: true } });
 app.register(eventPlugin);
 app.register(messageController);
 app.register(addressController);
 app.register(fastifySchedule);
+app.register(fastifyCors, { origin: "*" });
+app.register(jwtPlugin);
+
+app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: "Vem comigo API",
+      version: "1.0.0",
+    },
+  },
+});
+
+app.register(fastifySwaggerUi, {
+  routePrefix: "/docs",
+});
 
 app.setErrorHandler((error, request, reply) => {
   if (error instanceof ZodError) {

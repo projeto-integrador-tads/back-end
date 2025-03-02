@@ -16,7 +16,7 @@ export default async function loginHandler(
     });
 
     if (!user) {
-      return reply.status(401).send({ error: "Usuário não encontrado." });
+      return reply.status(400).send({ error: "Usuário não encontrado." });
     }
 
     if (!user.active) {
@@ -29,7 +29,7 @@ export default async function loginHandler(
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return reply.status(401).send({ error: "Senha incorreta." });
+      return reply.status(400).send({ error: "Senha incorreta." });
     }
 
     const token = request.server.jwt.sign({
@@ -39,7 +39,10 @@ export default async function loginHandler(
       id: user.id,
     });
 
-    reply.send({ token });
+    reply.send({
+      token,
+      user: { email, name: user.name, last_name: user.last_name, id: user.id },
+    });
   } catch (error) {
     console.error(error);
     return reply.status(500).send({ error: "Erro interno no servidor." });
