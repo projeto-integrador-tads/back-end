@@ -21,8 +21,6 @@ import { addressController } from "../controllers/addresses/addressController";
 import fastifySchedule from "@fastify/schedule";
 import { setupTokenCleanupTask } from "./tasks/clearTokens";
 import { fastifyCors } from "@fastify/cors";
-import { fastifySwagger } from "@fastify/swagger";
-import { fastifySwaggerUi } from "@fastify/swagger-ui";
 
 const app = Fastify();
 
@@ -43,19 +41,6 @@ app.register(addressController);
 app.register(fastifySchedule);
 app.register(fastifyCors, { origin: "*" });
 app.register(jwtPlugin);
-
-app.register(fastifySwagger, {
-  openapi: {
-    info: {
-      title: "Vem comigo API",
-      version: "1.0.0",
-    },
-  },
-});
-
-app.register(fastifySwaggerUi, {
-  routePrefix: "/docs",
-});
 
 app.setErrorHandler((error, request, reply) => {
   if (error instanceof ZodError) {
