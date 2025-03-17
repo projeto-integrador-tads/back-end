@@ -28,13 +28,13 @@ export async function startRide(
     await validateRideOwnership(ride, driverId);
     validateRideStatus(ride, RideStatus.SCHEDULED);
 
-    const now = dayjs();
-    const startTime = dayjs(ride.start_time);
-    if (now.isBefore(startTime)) {
-      throw new ValidationError(
-        "Não é possível iniciar a corrida antes do horário agendado."
-      );
-    }
+    // const now = dayjs();
+    // const startTime = dayjs(ride.start_time);
+    // // if (now.isBefore(startTime)) {
+    // //   throw new ValidationError(
+    // //     "Não é possível iniciar a corrida antes do horário agendado."
+    // //   );
+    // // }
 
     await validateConfirmedReservations(rideId);
 

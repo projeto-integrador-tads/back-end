@@ -1,6 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { models } from "../models";
-import { ValidationError } from "../../exeptions/validationError";
 import { handleValidationError } from "../../exeptions/handleValidationError";
 import {
   getRideById,
@@ -45,12 +44,6 @@ export async function getAllReservationsByRideId(
       perPage,
       sanitizeReservation
     );
-
-    if (reservations.data.length === 0) {
-      throw new ValidationError(
-        "Nenhuma reserva encontrada para esta corrida."
-      );
-    }
 
     return reply.status(200).send(reservations);
   } catch (error) {

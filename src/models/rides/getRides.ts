@@ -27,6 +27,18 @@ export async function getRidesByDriver(
         include: {
           StartAddress: true,
           EndAddress: true,
+          Reservations: {
+            select: {
+              passenger_id: true,
+              status: true,
+              Passenger: {
+                select: {
+                  name: true,
+                  last_name: true,
+                },
+              },
+            },
+          },
         },
       },
       page,
@@ -63,6 +75,18 @@ export async function getRidesByStartCity(
         include: {
           StartAddress: true,
           EndAddress: true,
+          Reservations: {
+            select: {
+              passenger_id: true,
+              status: true,
+              Passenger: {
+                select: {
+                  name: true,
+                  last_name: true,
+                },
+              },
+            },
+          },
         },
       },
       page,
@@ -98,6 +122,18 @@ export async function getRidesByDestinationCity(
         include: {
           StartAddress: true,
           EndAddress: true,
+          Reservations: {
+            select: {
+              passenger_id: true,
+              status: true,
+              Passenger: {
+                select: {
+                  name: true,
+                  last_name: true,
+                },
+              },
+            },
+          },
         },
       },
       page,
@@ -124,6 +160,35 @@ export async function getRideById(
       include: {
         StartAddress: true,
         EndAddress: true,
+        Driver: {
+          select: {
+            name: true,
+            last_name: true,
+            email: true,
+          },
+        },
+        Vehicle: {
+          select: {
+            brand: true,
+            model: true,
+            year: true,
+            color: true,
+            license_plate: true,
+            seats: true,
+          },
+        },
+        Reservations: {
+          select: {
+            passenger_id: true,
+            status: true,
+            Passenger: {
+              select: {
+                name: true,
+                last_name: true,
+              },
+            },
+          },
+        },
       },
     });
 

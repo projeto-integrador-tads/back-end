@@ -30,3 +30,12 @@ export const updateUserSchema = z.object({
 export const userIdSchema = z.object({
   id: z.string(),
 });
+
+export const reportQuerySchema = z.object({
+  startDate: z.string()
+    .datetime({ message: "Data inicial deve estar no formato ISO 8601" })
+    .optional(),
+  endDate: z.string()
+    .datetime({ message: "Data final deve estar no formato ISO 8601" })
+    .optional(),
+}).strict();

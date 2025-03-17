@@ -5,9 +5,12 @@ import { uploadProfilePicture } from "../../models/users/uploadProfilePicture";
 import { getProfilePicture } from "../../models/users/getProfilePicture";
 import { removeProfilePicture } from "../../models/users/removeProfilePicture";
 import { updateUser } from "../../models/users/updateUser";
+import { getProfilePictureById } from "../../models/users/getProfilePictureById";
+import { generateUserReport } from "../../models/users/getUserReport";
 import {
   updateUserSchema,
   userIdSchema,
+  reportQuerySchema,
 } from "../../models/users/validations/schema";
 
 export const userController: FastifyPluginAsync = async (
@@ -29,6 +32,16 @@ export const userController: FastifyPluginAsync = async (
 
   app.get("/users/profile-picture", getProfilePicture);
 
+  app.get(
+    "/users/:id/profile-picture",
+    {
+      schema: {
+        params: userIdSchema,
+      },
+    },
+    getProfilePictureById
+  );
+
   app.delete("/users/profile-picture", removeProfilePicture);
 
   app.put(
@@ -39,5 +52,15 @@ export const userController: FastifyPluginAsync = async (
       },
     },
     updateUser
+  );
+
+  app.get(
+    "/users/report",
+    {
+      schema: {
+        querystring: reportQuerySchema
+      }
+    },
+    generateUserReport
   );
 };
