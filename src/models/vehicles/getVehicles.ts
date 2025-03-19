@@ -28,8 +28,7 @@ export async function listActiveVehicles(
         },
       },
       page,
-      perPage,
-      sanitizeVehicle
+      perPage
     );
 
     return reply.status(200).send(paginatedVehicles);

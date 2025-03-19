@@ -4,6 +4,7 @@ export const createReviewSchema = z.object({
   ride_id: z.string(),
   rating: z.number().int().min(1).max(5),
   comment: z.string().optional(),
+  passenger_id: z.string().optional(),
 });
 
 export const updateReviewSchema = z.object({
